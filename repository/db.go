@@ -17,28 +17,6 @@ func Init() {
 }
 
 func InitDB() {
-
-	// config := models.Config{
-	// 	DB_Username: "root",
-	// 	DB_Password: "polisi21",
-	// 	DB_Port:     "3306",
-	// 	DB_Host:     "localhost",
-	// 	DB_Name:     "mini_project",
-	// }
-
-	// connectionString := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=utf8&parseTime=True&loc=Local",
-	// 	config.DB_Username,
-	// 	config.DB_Password,
-	// 	config.DB_Host,
-	// 	config.DB_Port,
-	// 	config.DB_Name,
-	// )
-
-	// var err error
-	// DB, err = gorm.Open(mysql.Open(connectionString), &gorm.Config{})
-	// if err != nil {
-	// 	panic(err)
-	// }
 	dsn := "host=localhost user=postgres password= dbname=mini_project port=5431 sslmode=disable TimeZone=Asia/Shanghai"
 	var err error
 	DB, err = gorm.Open(postgres.Open(dsn), &gorm.Config{})

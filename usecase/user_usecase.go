@@ -9,13 +9,13 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-// const admin = "admin"
-const user = "user"
-
 type UserUsecase interface {
 	CreateUser(payload dto.CreateUser) (models.User, error)
 	GetAllUsers() ([]models.User, error)
 	LoginUser(payload dto.LoginUser) (models.User, error)
+	GetUserById(id int) (models.User, error)
+	DeleteUser(id int) (models.User, error)
+	UpdateUser(id int, payload dto.UpdateUser) (models.User, error)
 }
 
 type userUsecase struct {
@@ -26,7 +26,7 @@ func NewUserUsecase(userRepo repository.UserRepository) *userUsecase {
 	return &userUsecase{userRepository: userRepo}
 }
 
-func (s *userUsecase) CreateUser(payload dto.CreateUser) (models.User, error) {
+func (u *userUsecase) CreateUser(payload dto.CreateUser) (models.User, error) {
 	password, err := bcrypt.GenerateFromPassword([]byte(payload.Password), 14)
 	if err != nil {
 		return models.User{}, err
@@ -37,32 +37,24 @@ func (s *userUsecase) CreateUser(payload dto.CreateUser) (models.User, error) {
 		Email:       payload.Email,
 		Password:    string(password),
 		DateOfBirth: payload.DateOfBirth,
-		UserType:    user,
+		UserType:    payload.UserType,
 	}
-	user, err := s.userRepository.Create(data)
+	user, err := u.userRepository.Create(data)
 
 	if err != nil {
-		return user, err
+		return models.User{}, err
 	}
 
 	return user, nil
 }
 
-func (s *userUsecase) GetAllUsers() ([]models.User, error) {
-	users, err := s.userRepository.GetAllUsers()
-	if err != nil {
-		return users, err
-
-	}
-	return users, nil
-}
-
-func (s *userUsecase) LoginUser(payload dto.LoginUser) (models.User, error) {
+func (u *userUsecase) LoginUser(payload dto.LoginUser) (models.User, error) {
 	data := models.User{
 		Email:    payload.Email,
 		Password: payload.Password,
+		UserType: payload.UserType,
 	}
-	user, err := s.userRepository.LoginUser(data)
+	user, err := u.userRepository.LoginUser(data)
 
 	if err != nil {
 		return user, err
@@ -71,7 +63,54 @@ func (s *userUsecase) LoginUser(payload dto.LoginUser) (models.User, error) {
 	errPassword := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(payload.Password))
 
 	if errPassword != nil {
-		return user, errors.New("password not same")
+		return models.User{}, errors.New("password not same")
+	}
+
+	return user, nil
+}
+
+func (u *userUsecase) GetAllUsers() ([]models.User, error) {
+	users, err := u.userRepository.GetAllUsers()
+	if err != nil {
+		return users, err
+
+	}
+	return users, nil
+}
+
+func (u *userUsecase) GetUserById(id int) (models.User, error) {
+	user, err := u.userRepository.GetUserById(id)
+
+	if err != nil {
+		return models.User{}, err
+	}
+
+	return user, nil
+}
+
+func (u *userUsecase) UpdateUser(id int, payload dto.UpdateUser) (models.User, error) {
+	user := models.User{
+		Name:        payload.Name,
+		Email:       payload.Email,
+		DateOfBirth: payload.DateOfBirth,
+		Address:     payload.Address,
+	}
+
+	updateUser, err := u.userRepository.UpdateUser(id, user)
+
+	if err != nil {
+		return models.User{}, err
+	}
+
+	return updateUser, nil
+}
+
+func (u *userUsecase) DeleteUser(id int) (models.User, error) {
+	user, err := u.userRepository.DeleteUser(id)
+
+	if err != nil {
+		return models.User{}, err
+
 	}
 
 	return user, nil

@@ -3,9 +3,11 @@ module main
 go 1.19
 
 require (
-	github.com/golang-jwt/jwt/v5 v5.0.0
+	github.com/golang-jwt/jwt v3.2.2+incompatible
 	gorm.io/gorm v1.25.0
 )
+
+require golang.org/x/time v0.3.0 // indirect
 
 require (
 	github.com/jackc/pgpassfile v1.0.0 // indirect

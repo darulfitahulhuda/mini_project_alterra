@@ -2,8 +2,9 @@ package usecase
 
 import (
 	"main/dto"
+	"time"
 
-	"github.com/golang-jwt/jwt/v5"
+	"github.com/golang-jwt/jwt"
 	"github.com/labstack/echo/v4"
 )
 
@@ -26,6 +27,7 @@ func (s *authUsecase) CreateToken(payload dto.CreateToken) (string, error) {
 		"authorized": true,
 		"id":         payload.Id,
 		"user_type":  payload.UserType,
+		"exp":        time.Now().Add(time.Hour * 24 * 30).UnixMilli(),
 	}
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 

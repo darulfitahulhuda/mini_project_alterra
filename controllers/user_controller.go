@@ -34,7 +34,7 @@ func (u *userController) Create(c echo.Context) error {
 
 	token, err := u.authCase.CreateToken(dto.CreateToken{
 		Id:       int(user.ID),
-		UserType: "user",
+		UserType: user.UserType,
 	})
 
 	if err != nil {
@@ -48,21 +48,6 @@ func (u *userController) Create(c echo.Context) error {
 	})
 }
 
-func (u *userController) GetAllUsers(c echo.Context) error {
-	users, err := u.userCase.GetAllUsers()
-
-	if err != nil {
-		return c.JSON(http.StatusBadRequest, err)
-
-	}
-
-	return c.JSON(http.StatusOK, echo.Map{
-		"message": "Success Get All User",
-		"data":    users,
-	})
-
-}
-
 func (u *userController) LoginUser(c echo.Context) error {
 	user := dto.LoginUser{}
 
@@ -74,12 +59,108 @@ func (u *userController) LoginUser(c echo.Context) error {
 
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, echo.Map{
+			"status":  http.StatusBadRequest,
 			"message": "password or email is wrong",
 		})
+	}
+
+	token, err := u.authCase.CreateToken(dto.CreateToken{
+		Id:       int(users.ID),
+		UserType: user.UserType,
+	})
+
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, err)
 	}
 
 	return c.JSON(http.StatusCreated, echo.Map{
 		"message": "Success Create User",
 		"data":    users,
+		"token":   token,
 	})
+}
+
+func (u *userController) GetUserByAuth(c echo.Context) error {
+	userId := u.authCase.ExtractTokenUserId(c)
+
+	if userId == 0 {
+		return c.JSON(http.StatusUnauthorized, echo.Map{
+			"status":  http.StatusUnauthorized,
+			"message": "Token Unauthorized",
+		})
+	}
+
+	user, err := u.userCase.GetUserById(userId)
+
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, echo.Map{
+			"status":  http.StatusBadRequest,
+			"message": err.Error(),
+		})
+	}
+
+	return c.JSON(http.StatusOK, echo.Map{
+		"status":  http.StatusOK,
+		"message": "Success get user",
+		"data":    user,
+	})
+}
+
+func (u *userController) UpdateUser(c echo.Context) error {
+	var data dto.UpdateUser
+
+	userId := u.authCase.ExtractTokenUserId(c)
+
+	if userId == 0 {
+		return c.JSON(http.StatusUnauthorized, echo.Map{
+			"status":  http.StatusUnauthorized,
+			"message": "Token Unauthorized",
+		})
+	}
+
+	if err := c.Bind(&data); err != nil {
+		return c.JSON(http.StatusBadRequest, echo.Map{
+			"status":  http.StatusBadRequest,
+			"message": err.Error(),
+		})
+	}
+
+	user, err := u.userCase.UpdateUser(userId, data)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, echo.Map{
+			"status":  http.StatusBadRequest,
+			"message": err.Error(),
+		})
+	}
+
+	return c.JSON(http.StatusOK, echo.Map{
+		"status":  http.StatusOK,
+		"message": "Success update user",
+		"data":    user,
+	})
+
+}
+func (u *userController) DeleteUser(c echo.Context) error {
+	userId := u.authCase.ExtractTokenUserId(c)
+
+	if userId == 0 {
+		return c.JSON(http.StatusUnauthorized, echo.Map{
+			"status":  http.StatusUnauthorized,
+			"message": "Token Unauthorized",
+		})
+	}
+
+	_, err := u.userCase.DeleteUser(userId)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, echo.Map{
+			"status":  http.StatusBadRequest,
+			"message": err.Error(),
+		})
+	}
+
+	return c.JSON(http.StatusOK, echo.Map{
+		"status":  http.StatusOK,
+		"message": "Success Delete user",
+	})
+
 }

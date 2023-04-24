@@ -39,7 +39,7 @@ func (r *userRepository) GetAllUsers() ([]models.User, error) {
 func (r *userRepository) LoginUser(data models.User) (models.User, error) {
 	var user models.User
 	var e error
-	if e = r.db.Model(&user).Where("email = ?", data.Email).First(&user).Error; e != nil {
+	if e = r.db.Model(&user).Where("email = ? AND user_type = ?", data.Email, data.UserType).First(&user).Error; e != nil {
 		return user, e
 	}
 	return user, nil
