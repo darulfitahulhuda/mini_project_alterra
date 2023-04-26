@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"main/dto"
+	"main/models"
 	"main/usecase"
 	"net/http"
 
@@ -20,7 +21,7 @@ func NewAdminController(userUsecase usecase.UserUsecase, authUsecase usecase.Aut
 }
 
 func (a *adminController) GetAllUsers(c echo.Context) error {
-	userId := a.authCase.ExtractTokenAdminId(c)
+	userId := a.authCase.ExtractTokenUserId(c, models.Admin_Type)
 
 	if userId == 0 {
 		return c.JSON(http.StatusUnauthorized, echo.Map{
@@ -44,7 +45,7 @@ func (a *adminController) GetAllUsers(c echo.Context) error {
 }
 
 func (a *adminController) GetAdminByAuth(c echo.Context) error {
-	adminId := a.authCase.ExtractTokenAdminId(c)
+	adminId := a.authCase.ExtractTokenUserId(c, models.Admin_Type)
 
 	if adminId == 0 {
 		return c.JSON(http.StatusUnauthorized, echo.Map{
@@ -72,7 +73,7 @@ func (a *adminController) GetAdminByAuth(c echo.Context) error {
 func (a *adminController) UpdateAdmin(c echo.Context) error {
 	var data dto.UpdateUser
 
-	adminId := a.authCase.ExtractTokenAdminId(c)
+	adminId := a.authCase.ExtractTokenUserId(c, models.Admin_Type)
 
 	if adminId == 0 {
 		return c.JSON(http.StatusUnauthorized, echo.Map{
@@ -104,7 +105,7 @@ func (a *adminController) UpdateAdmin(c echo.Context) error {
 
 }
 func (a *adminController) DeleteAdmin(c echo.Context) error {
-	adminId := a.authCase.ExtractTokenAdminId(c)
+	adminId := a.authCase.ExtractTokenUserId(c, models.Admin_Type)
 
 	if adminId == 0 {
 		return c.JSON(http.StatusUnauthorized, echo.Map{

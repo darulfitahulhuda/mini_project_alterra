@@ -12,8 +12,7 @@ const SECRET_JWT = "nFyLUyG5aUUkjGE+vk8/BDxKwAG/j5hJ+Io72HArK7k="
 
 type AuthUsecase interface {
 	CreateToken(payload dto.CreateToken) (string, error)
-	ExtractTokenUserId(payload echo.Context) int
-	ExtractTokenAdminId(payload echo.Context) int
+	ExtractTokenUserId(payload echo.Context, userType string) int
 }
 
 type authUsecase struct{}
@@ -35,11 +34,17 @@ func (s *authUsecase) CreateToken(payload dto.CreateToken) (string, error) {
 
 }
 
-func (s *authUsecase) ExtractTokenUserId(payload echo.Context) int {
+func (s *authUsecase) ExtractTokenUserId(payload echo.Context, userType string) int {
 	user := payload.Get("user").(*jwt.Token)
 	if user.Valid {
 		claims := user.Claims.(jwt.MapClaims)
-		if claims["user_type"] == "user" {
+		if userType == "all" {
+			id := claims["id"].(float64)
+			return int(id)
+		} else if claims["user_type"] == "user" && claims["user_type"] == userType {
+			id := claims["id"].(float64)
+			return int(id)
+		} else if claims["user_type"] == "admin" && claims["user_type"] == userType {
 			id := claims["id"].(float64)
 			return int(id)
 		}
@@ -47,18 +52,4 @@ func (s *authUsecase) ExtractTokenUserId(payload echo.Context) int {
 
 	}
 	return 0
-}
-
-func (s *authUsecase) ExtractTokenAdminId(payload echo.Context) int {
-	user := payload.Get("user").(*jwt.Token)
-	if user.Valid {
-		claims := user.Claims.(jwt.MapClaims)
-		if claims["user_type"] == "admin" {
-			id := claims["id"].(float64)
-			return int(id)
-		}
-		return 0
-	}
-	return 0
-
 }

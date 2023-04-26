@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"main/dto"
+	"main/models"
 	"main/usecase"
 	"net/http"
 
@@ -81,7 +82,7 @@ func (u *userController) LoginUser(c echo.Context) error {
 }
 
 func (u *userController) GetUserByAuth(c echo.Context) error {
-	userId := u.authCase.ExtractTokenUserId(c)
+	userId := u.authCase.ExtractTokenUserId(c, models.User_Type)
 
 	if userId == 0 {
 		return c.JSON(http.StatusUnauthorized, echo.Map{
@@ -109,7 +110,7 @@ func (u *userController) GetUserByAuth(c echo.Context) error {
 func (u *userController) UpdateUser(c echo.Context) error {
 	var data dto.UpdateUser
 
-	userId := u.authCase.ExtractTokenUserId(c)
+	userId := u.authCase.ExtractTokenUserId(c, models.User_Type)
 
 	if userId == 0 {
 		return c.JSON(http.StatusUnauthorized, echo.Map{
@@ -141,7 +142,7 @@ func (u *userController) UpdateUser(c echo.Context) error {
 
 }
 func (u *userController) DeleteUser(c echo.Context) error {
-	userId := u.authCase.ExtractTokenUserId(c)
+	userId := u.authCase.ExtractTokenUserId(c, models.User_Type)
 
 	if userId == 0 {
 		return c.JSON(http.StatusUnauthorized, echo.Map{
