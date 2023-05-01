@@ -1,6 +1,7 @@
 package repository
 
 import (
+	"fmt"
 	"main/models"
 
 	"gorm.io/gorm"
@@ -8,10 +9,16 @@ import (
 
 type TransactionRepository interface {
 	CreateTransaction(data models.Transaction) (models.Transaction, error)
+
 	GetAllTransaction() ([]models.Transaction, error)
 	GetTransactionByUser(userId int) ([]models.Transaction, error)
+	GetTransactionById(id int) (models.Transaction, error)
+
 	UpdateTransaction(id int, data models.Transaction) error
-	UpdateStatusPayment(codePayment string, data string) error
+	UpdateTransactionDetail(data []models.TransactionDetail) error
+	UpdateShipping(id int, data models.Shipping) error
+	UpdatePaymentMethod(data models.PaymentMethod) error
+
 	SoftDeleteTransaction(id int) error
 }
 
@@ -51,30 +58,55 @@ func (r *transactionRepository) GetTransactionByUser(userId int) ([]models.Trans
 	return transactions, nil
 }
 
+func (r *transactionRepository) GetTransactionById(id int) (models.Transaction, error) {
+	var transaction models.Transaction
+
+	if err := r.db.Preload("PaymentMethod").Preload("TransactionDetail").Preload("Shipping").First(&transaction, id).Error; err != nil {
+		return models.Transaction{}, err
+	}
+
+	return transaction, nil
+
+}
+
 func (r *transactionRepository) UpdateTransaction(id int, data models.Transaction) error {
 	if err := r.db.Model(&models.Transaction{}).Where("ID = ?", id).Updates(data).Error; err != nil {
-		return err
-	}
-
-	if err := r.db.Model(&models.TransactionDetail{}).Where("trasaction_id = ?", id).Updates(data.TransactionDetail).Error; err != nil {
-		return err
-	}
-
-	if err := r.db.Model(&models.PaymentMethod{}).Where("trasaction_id = ?", id).Updates(data.PaymentMethod).Error; err != nil {
-		return err
-	}
-
-	if err := r.db.Model(&models.Shipping{}).Where("trasaction_id = ?", id).Updates(data.Shipping).Error; err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (r *transactionRepository) UpdateStatusPayment(codePayment string, data string) error {
-	if err := r.db.Model(&models.PaymentMethod{}).Where("code_payment = ?", codePayment).Update("status", data).Error; err != nil {
+func (r *transactionRepository) UpdateTransactionDetail(data []models.TransactionDetail) error {
+
+	for _, v := range data {
+		var newData models.TransactionDetail
+
+		if err := r.db.Model(&newData).Where("ID = ?", v.ID).Updates(v).Error; err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (r *transactionRepository) UpdateShipping(id int, data models.Shipping) error {
+	var shipping models.Shipping
+	if err := r.db.Model(&shipping).Where("trasaction_id = ?", id).Updates(data).Error; err != nil {
 		return err
 	}
+
+	return nil
+}
+
+func (r *transactionRepository) UpdatePaymentMethod(data models.PaymentMethod) error {
+	var payment models.PaymentMethod
+
+	if err := r.db.Model(&payment).Where("code_payment = ?", data.CodePayment).Updates(data).Error; err != nil {
+		return err
+	}
+
+	fmt.Printf("UpdatePaymentMethod: %d", payment.ID)
 
 	return nil
 }

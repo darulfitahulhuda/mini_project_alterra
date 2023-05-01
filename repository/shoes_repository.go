@@ -10,7 +10,10 @@ type ShoesRepository interface {
 	CreateShoes(data models.Shoes) error
 	GetAllShoes() ([]models.Shoes, error)
 	GetDetailShoes(id int) (models.Shoes, error)
+	GetShoesSize(data models.ShoesSize) (models.ShoesSize, error)
 	UpdateShoes(id int, data models.Shoes) error
+	UpdateShoesSize(data models.ShoesSize) error
+	ReduceShoesQty(data models.ShoesSize) error
 	DeleteShoes(id int) error
 }
 type shoesRepository struct {
@@ -29,7 +32,7 @@ func (r *shoesRepository) CreateShoes(data models.Shoes) error {
 func (r *shoesRepository) GetAllShoes() ([]models.Shoes, error) {
 	shoes := make([]models.Shoes, 0)
 
-	if err := r.db.Limit(10).Find(&shoes).Error; err != nil {
+	if err := r.db.Order("ID desc").Limit(10).Find(&shoes).Error; err != nil {
 		return shoes, err
 
 	}
@@ -39,12 +42,20 @@ func (r *shoesRepository) GetAllShoes() ([]models.Shoes, error) {
 func (r *shoesRepository) GetDetailShoes(id int) (models.Shoes, error) {
 	var shoes models.Shoes
 
-	if err := r.db.Preload("ShoesDetail").Find(&shoes, id).Error; err != nil {
+	if err := r.db.Preload("ShoesDetail").Preload("Sizes").Find(&shoes, id).Error; err != nil {
 		return shoes, err
 	}
 	return shoes, nil
 }
+func (r *shoesRepository) GetShoesSize(data models.ShoesSize) (models.ShoesSize, error) {
+	var shoesSize models.ShoesSize
 
+	if err := r.db.Where("shoes_id = ? AND size = ?", data.ShoesId, data.Size).First(&shoesSize).Error; err != nil {
+		return shoesSize, err
+
+	}
+	return shoesSize, nil
+}
 func (r *shoesRepository) UpdateShoes(id int, data models.Shoes) error {
 	var shoesDetail = data.ShoesDetail
 
@@ -58,6 +69,31 @@ func (r *shoesRepository) UpdateShoes(id int, data models.Shoes) error {
 	}
 
 	return nil
+}
+
+func (r *shoesRepository) UpdateShoesSize(data models.ShoesSize) error {
+	if err := r.db.Model(&models.ShoesSize{}).Where("shoes_id = ? AND size = ?", data.ShoesId, data.Size).Update("qty", data.Qty).Error; err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (r *shoesRepository) ReduceShoesQty(data models.ShoesSize) error {
+	var shoesSize models.ShoesSize
+
+	if err := r.db.Where("shoes_id = ? AND size = ?", data.ShoesId, data.Size).First(&shoesSize).Error; err != nil {
+		return err
+	}
+
+	shoesSize.Qty -= data.Qty
+
+	if err := r.db.Save(&shoesSize).Error; err != nil {
+		return err
+	}
+
+	return nil
+
 }
 
 func (r *shoesRepository) DeleteShoes(id int) error {

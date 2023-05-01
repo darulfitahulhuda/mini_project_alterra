@@ -23,6 +23,14 @@ func NewShoesUsecase(shoesRepo repository.ShoesRepository) *shoesUsecase {
 }
 
 func (u *shoesUsecase) CreateShoes(payload dto.Shoes) error {
+	shoesSize := make([]models.ShoesSize, 0)
+
+	for _, v := range payload.Sizes {
+		shoesSize = append(shoesSize, models.ShoesSize{
+			Qty:  v.Qty,
+			Size: v.Size,
+		})
+	}
 	shoes := models.Shoes{
 		Name:   payload.Name,
 		Gender: payload.Gender,
@@ -31,11 +39,9 @@ func (u *shoesUsecase) CreateShoes(payload dto.Shoes) error {
 		ShoesDetail: models.ShoesDetail{
 			Description: payload.Description,
 			Category:    payload.Category,
-			Color:       payload.Color,
-			Size:        payload.Size,
-			Qty:         payload.Qty,
 			Brand:       payload.Brand,
 		},
+		Sizes: shoesSize,
 	}
 	if err := u.shoesRepository.CreateShoes(shoes); err != nil {
 		return err
@@ -76,10 +82,8 @@ func (u *shoesUsecase) GetDetailShoes(id int) (models.ShoesDetailData, error) {
 		Gender:      shoes.Gender,
 		Description: shoes.ShoesDetail.Description,
 		Category:    shoes.ShoesDetail.Category,
-		Color:       shoes.ShoesDetail.Color,
-		Size:        shoes.ShoesDetail.Size,
-		Qty:         shoes.ShoesDetail.Qty,
 		Brand:       shoes.ShoesDetail.Brand,
+		Sizes:       shoes.Sizes,
 	}
 
 	if err != nil {
@@ -89,6 +93,7 @@ func (u *shoesUsecase) GetDetailShoes(id int) (models.ShoesDetailData, error) {
 }
 
 func (u *shoesUsecase) UpdateShoes(id int, payload dto.Shoes) error {
+
 	shoes := models.Shoes{
 		Name:   payload.Name,
 		Gender: payload.Gender,
@@ -97,14 +102,22 @@ func (u *shoesUsecase) UpdateShoes(id int, payload dto.Shoes) error {
 		ShoesDetail: models.ShoesDetail{
 			Description: payload.Description,
 			Category:    payload.Category,
-			Color:       payload.Color,
-			Size:        payload.Size,
-			Qty:         payload.Qty,
 			Brand:       payload.Brand,
 		},
 	}
 	if err := u.shoesRepository.UpdateShoes(id, shoes); err != nil {
 		return err
+	}
+
+	for _, v := range payload.Sizes {
+		size := models.ShoesSize{
+			ShoesId: uint(id),
+			Size:    v.Size,
+			Qty:     v.Qty,
+		}
+		if err := u.shoesRepository.UpdateShoesSize(size); err != nil {
+			return err
+		}
 	}
 
 	return nil

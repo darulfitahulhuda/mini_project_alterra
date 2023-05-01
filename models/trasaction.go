@@ -1,8 +1,6 @@
 package models
 
 import (
-	"main/dto"
-
 	"gorm.io/gorm"
 )
 
@@ -24,15 +22,23 @@ type Transaction struct {
 
 type TransactionDetail struct {
 	*gorm.Model
+	ID            uint           `json:"ID" form:"ID" gorm:"primaryKey"`
 	TransactionId uint           `json:"trasaction_id" form:"trasaction_id" gorm:"column:trasaction_id"`
 	ShoesId       uint           `json:"shoes_id" form:"shoes_id" gorm:"column:shoes_id"`
 	Qty           int            `json:"qty" form:"qty"`
 	Price         float64        `json:"price" form:"price"`
+	Size          int            `json:"size" form:"size"`
 	DeletedAt     gorm.DeletedAt `gorm:"index"`
 }
 
 type TransactionResponse struct {
-	Message string          `json:"message"`
-	Status  int             `json:"status"`
-	Data    dto.Transaction `json:"data"`
+	Message string      `json:"message"`
+	Status  int         `json:"status"`
+	Data    Transaction `json:"data"`
+}
+
+type TransactionListResponse struct {
+	Message string        `json:"message"`
+	Status  int           `json:"status"`
+	Data    []Transaction `json:"data"`
 }

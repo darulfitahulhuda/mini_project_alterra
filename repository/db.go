@@ -29,10 +29,11 @@ func InitialMigration() {
 	DB.AutoMigrate(&models.User{})
 	DB.AutoMigrate(&models.Shoes{})
 	DB.AutoMigrate(&models.ShoesDetail{})
-	DB.AutoMigrate(&models.Cart{})
-	DB.AutoMigrate(&models.CartItems{})
+	DB.AutoMigrate(&models.Carts{})
+	// DB.AutoMigrate(&models.CartItems{})
 	DB.AutoMigrate(&models.PaymentMethod{})
 	DB.AutoMigrate(&models.Shipping{})
 	DB.AutoMigrate(&models.Transaction{})
 	DB.AutoMigrate(&models.TransactionDetail{})
+	DB.AutoMigrate(&models.ShoesSize{})
 }

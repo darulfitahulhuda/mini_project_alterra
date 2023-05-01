@@ -18,16 +18,19 @@ func main() {
 	// Repository
 	userRepository := repository.NewUserRepository(repository.DB)
 	shoesRepository := repository.NewShoesRepository(repository.DB)
+	transacationRepository := repository.NewTransactionRepository(repository.DB)
 
 	// Usecase
 	userUsecase := usecase.NewUserUsecase(userRepository)
 	authUsecase := usecase.NewAuthUsecase()
 	shoesUsecase := usecase.NewShoesUsecase(shoesRepository)
+	transactionUsecase := usecase.NewTransactionUsecase(transacationRepository, shoesRepository)
 
 	// Controllers
 	userController := controllers.NewUserController(userUsecase, authUsecase)
 	adminController := controllers.NewAdminController(userUsecase, authUsecase)
 	shoesController := controllers.NewShoesController(shoesUsecase, authUsecase)
+	transactionController := controllers.NewTransactionController(transactionUsecase, authUsecase)
 
 	// Auth routes
 	e.POST("/register", userController.Create)
@@ -56,6 +59,14 @@ func main() {
 		r.POST("admin/shoes", shoesController.CreateShoes)
 		r.PUT("admin/shoes/:id", shoesController.UpdateShoes)
 		r.DELETE("admin/shoes/:id", shoesController.DeleteShoes)
+
+		// Transaction routes
+		r.POST("user/transaction", transactionController.CreateTransaction)
+		r.GET("user/transaction", transactionController.GetTransactionByUser)
+		r.GET("admin/transaction", transactionController.GetAllTransaction)
+		r.PUT("admin/transaction/:id", transactionController.UpdateTransaction)
+		r.PUT("admin/transaction/payment", transactionController.UpdatePaymentMethod)
+		r.PATCH("admin/transaction/:id", transactionController.SoftDeleteTransaction)
 
 	}
 

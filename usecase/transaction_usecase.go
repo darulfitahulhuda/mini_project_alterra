@@ -14,16 +14,17 @@ type TransactionUsecase interface {
 	GetAllTransaction() ([]models.Transaction, error)
 	GetTransactionByUser(userId int) ([]models.Transaction, error)
 	UpdateTransaction(id int, payload dto.Transaction) error
-	UpdateStatusPayment(codePayment string, data string) error
+	UpdatePaymentMethod(payload dto.PaymentStatus) error
 	SoftDeleteTransaction(id int) error
 }
 
 type transactionUsecase struct {
 	transactionRepo repository.TransactionRepository
+	shoesRepo       repository.ShoesRepository
 }
 
-func NewTransactionUsecase(transactionRepo repository.TransactionRepository) *transactionUsecase {
-	return &transactionUsecase{transactionRepo: transactionRepo}
+func NewTransactionUsecase(transactionRepo repository.TransactionRepository, shoesRepo repository.ShoesRepository) *transactionUsecase {
+	return &transactionUsecase{transactionRepo: transactionRepo, shoesRepo: shoesRepo}
 }
 
 func (u *transactionUsecase) CreateTransaction(payload dto.Transaction) (models.Transaction, error) {
@@ -31,12 +32,28 @@ func (u *transactionUsecase) CreateTransaction(payload dto.Transaction) (models.
 	var transactionDetails []models.TransactionDetail
 
 	for _, v := range payload.Products {
-		totalPrice += v.Price
+		prodcutPrice := v.Price * float64(v.Qty)
+		totalPrice += prodcutPrice
 		transactionDetails = append(transactionDetails, models.TransactionDetail{
 			ShoesId: uint(v.ShoesId),
 			Price:   v.Price,
 			Qty:     v.Qty,
+			Size:    v.Size,
 		})
+
+		if err := u.shoesRepo.ReduceShoesQty(models.ShoesSize{ShoesId: uint(v.ShoesId), Size: v.Size, Qty: v.Qty}); err != nil {
+			return models.Transaction{}, err
+
+		}
+	}
+
+	totalPrice += payload.Shipping.Price
+
+	shipping := models.Shipping{
+		Address:      payload.Shipping.Address,
+		Price:        payload.Shipping.Price,
+		Method:       payload.Shipping.Method,
+		DeliveriDate: payload.Shipping.DeliveriDate,
 	}
 
 	transaction := models.Transaction{
@@ -49,6 +66,7 @@ func (u *transactionUsecase) CreateTransaction(payload dto.Transaction) (models.
 			Status:      models.PAYMENT_STATUS_WAITING,
 		},
 		TransactionDetail: transactionDetails,
+		Shipping:          shipping,
 	}
 
 	data, err := u.transactionRepo.CreateTransaction(transaction)
@@ -86,12 +104,16 @@ func (u *transactionUsecase) UpdateTransaction(id int, payload dto.Transaction) 
 	var transactionDetails []models.TransactionDetail
 
 	for _, v := range payload.Products {
-		totalPrice += v.Price
 		transactionDetails = append(transactionDetails, models.TransactionDetail{
 			ShoesId: uint(v.ShoesId),
 			Price:   v.Price,
 			Qty:     v.Qty,
+			ID:      uint(v.ID),
 		})
+	}
+
+	if err := u.transactionRepo.UpdateTransactionDetail(transactionDetails); err != nil {
+		return err
 	}
 
 	shipping := models.Shipping{
@@ -101,17 +123,29 @@ func (u *transactionUsecase) UpdateTransaction(id int, payload dto.Transaction) 
 		DeliveriDate: payload.Shipping.DeliveriDate,
 	}
 
+	if err := u.transactionRepo.UpdateShipping(id, shipping); err != nil {
+		return err
+
+	}
+
+	getTransaction, err := u.transactionRepo.GetTransactionById(id)
+	if err != nil {
+		return err
+	}
+
+	for _, v := range getTransaction.TransactionDetail {
+		prodcutPrice := v.Price * float64(v.Qty)
+		totalPrice += prodcutPrice
+	}
+
+	totalPrice += getTransaction.Shipping.Price
+
 	transaction := models.Transaction{
 		UserId:     uint(payload.UserId),
 		TotalPrice: totalPrice,
-		Status:     models.TRANSACTION_WAITING_PAYMENT,
-		PaymentMethod: models.PaymentMethod{
-			Name:   payload.NamePayment,
-			Status: models.PAYMENT_STATUS_WAITING,
-		},
-		TransactionDetail: transactionDetails,
-		Shipping:          shipping,
+		Status:     payload.Status,
 	}
+
 	if err := u.transactionRepo.UpdateTransaction(id, transaction); err != nil {
 		return err
 	}
@@ -119,11 +153,16 @@ func (u *transactionUsecase) UpdateTransaction(id int, payload dto.Transaction) 
 	return nil
 }
 
-func (u *transactionUsecase) UpdateStatusPayment(codePayment string, data string) error {
-	if err := u.transactionRepo.UpdateStatusPayment(codePayment, data); err != nil {
-		return err
-
+func (u *transactionUsecase) UpdatePaymentMethod(payload dto.PaymentStatus) error {
+	data := models.PaymentMethod{
+		Name:        payload.Name,
+		CodePayment: payload.CodePayment,
+		Status:      payload.StatusPayment,
 	}
+	if err := u.transactionRepo.UpdatePaymentMethod(data); err != nil {
+		return err
+	}
+
 	return nil
 }
 func (u *transactionUsecase) SoftDeleteTransaction(id int) error {
@@ -140,7 +179,7 @@ func randomCodePayment(shoesId, userId int) string {
 	const charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
 
 	// Create a byte slice with length 5 to hold the random string
-	randomCaracter := make([]byte, 5)
+	randomCaracter := make([]byte, 10)
 
 	for i := range randomCaracter {
 		// Choose a random character from the character set
