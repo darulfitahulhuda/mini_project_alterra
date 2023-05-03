@@ -19,18 +19,21 @@ func main() {
 	userRepository := repository.NewUserRepository(repository.DB)
 	shoesRepository := repository.NewShoesRepository(repository.DB)
 	transacationRepository := repository.NewTransactionRepository(repository.DB)
+	cartRespository := repository.NewCartRepository(repository.DB)
 
 	// Usecase
 	userUsecase := usecase.NewUserUsecase(userRepository)
 	authUsecase := usecase.NewAuthUsecase()
 	shoesUsecase := usecase.NewShoesUsecase(shoesRepository)
 	transactionUsecase := usecase.NewTransactionUsecase(transacationRepository, shoesRepository)
+	cartUsecase := usecase.NewCartUsecase(cartRespository, shoesRepository)
 
 	// Controllers
 	userController := controllers.NewUserController(userUsecase, authUsecase)
 	adminController := controllers.NewAdminController(userUsecase, authUsecase)
 	shoesController := controllers.NewShoesController(shoesUsecase, authUsecase)
 	transactionController := controllers.NewTransactionController(transactionUsecase, authUsecase)
+	cartController := controllers.NewCartContoller(cartUsecase, authUsecase)
 
 	// Auth routes
 	e.POST("/register", userController.Create)
@@ -68,6 +71,11 @@ func main() {
 		r.PUT("admin/transaction/payment", transactionController.UpdatePaymentMethod)
 		r.PATCH("admin/transaction/:id", transactionController.SoftDeleteTransaction)
 
+		// Cart routes
+		r.POST("user/carts", cartController.CreateCart)
+		r.GET("user/carts", cartController.GetAllCarts)
+		r.PUT("user/carts/:id", cartController.UpdateCart)
+		r.DELETE("user/carts/:id", cartController.GetAllCarts)
 	}
 
 	// shoes routes
