@@ -63,6 +63,7 @@ func main() {
 		r.PUT("admin/shoes/:id", shoesController.UpdateShoes)
 		r.DELETE("admin/shoes/:id", shoesController.DeleteShoes)
 		r.DELETE("admin/shoes/size", shoesController.DeleteShoesSize)
+		r.POST("admin/shoes/size", shoesController.CreateShoesSize)
 
 		// Transaction routes
 		r.POST("user/transaction", transactionController.CreateTransaction)

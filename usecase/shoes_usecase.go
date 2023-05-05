@@ -7,7 +7,8 @@ import (
 )
 
 type ShoesUsecase interface {
-	CreateShoes(payload dto.Shoes) error
+	CreateShoes(payload dto.Shoes) (models.ShoesDetailData, error)
+	CreateShoesSize(payload dto.ShoesSize) (models.ShoesSize, error)
 	GetAllShoes() ([]models.ShoesListData, error)
 	GetDetailShoes(id int) (models.ShoesDetailData, error)
 	UpdateShoes(id int, payload dto.Shoes) error
@@ -23,7 +24,7 @@ func NewShoesUsecase(shoesRepo repository.ShoesRepository) *shoesUsecase {
 	return &shoesUsecase{shoesRepository: shoesRepo}
 }
 
-func (u *shoesUsecase) CreateShoes(payload dto.Shoes) error {
+func (u *shoesUsecase) CreateShoes(payload dto.Shoes) (models.ShoesDetailData, error) {
 	shoesSize := make([]models.ShoesSize, 0)
 
 	for _, v := range payload.Sizes {
@@ -43,10 +44,47 @@ func (u *shoesUsecase) CreateShoes(payload dto.Shoes) error {
 		},
 		Sizes: shoesSize,
 	}
-	if err := u.shoesRepository.CreateShoes(shoes); err != nil {
-		return err
+	data, err := u.shoesRepository.CreateShoes(shoes)
+	if err != nil {
+		return models.ShoesDetailData{}, err
 	}
-	return nil
+
+	sizes := make([]dto.ShoesSize, 0)
+
+	for _, v := range data.Sizes {
+		sizes = append(sizes, dto.ShoesSize{
+			Size: v.Size,
+			Qty:  v.Qty,
+		})
+
+	}
+
+	detailShoes := models.ShoesDetailData{
+		ID:          int(shoes.ID),
+		Name:        data.Name,
+		Images:      data.Images,
+		Price:       data.Price,
+		Gender:      data.Gender,
+		Description: data.ShoesDetail.Description,
+		Brand:       data.ShoesDetail.Brand,
+		Sizes:       sizes,
+	}
+	return detailShoes, nil
+}
+
+func (u *shoesUsecase) CreateShoesSize(payload dto.ShoesSize) (models.ShoesSize, error) {
+
+	data, err := u.shoesRepository.CreateShoesSize(models.ShoesSize{
+		ShoesId: uint(payload.Size),
+		Qty:     payload.Qty,
+		Size:    payload.Size,
+	})
+
+	if err != nil {
+		return data, err
+	}
+	return data, err
+
 }
 
 func (u *shoesUsecase) GetAllShoes() ([]models.ShoesListData, error) {

@@ -58,3 +58,9 @@ type ShoesDetailData struct {
 	Brand       string          `json:"brand"`
 	Sizes       []dto.ShoesSize `json:"sizes"`
 }
+
+type ShoesSizeResponse struct {
+	Message string    `json:"message"`
+	Status  int       `json:"status"`
+	Data    ShoesSize `json:"data"`
+}

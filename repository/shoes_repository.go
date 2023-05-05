@@ -7,13 +7,17 @@ import (
 )
 
 type ShoesRepository interface {
-	CreateShoes(data models.Shoes) error
+	CreateShoes(data models.Shoes) (models.Shoes, error)
+	CreateShoesSize(data models.ShoesSize) (models.ShoesSize, error)
+
 	GetAllShoes() ([]models.Shoes, error)
 	GetDetailShoes(id int) (models.Shoes, error)
 	GetShoesSize(data models.ShoesSize) (models.ShoesSize, error)
+
 	UpdateShoes(id int, data models.Shoes) error
 	UpdateShoesSize(data models.ShoesSize) error
 	ReduceShoesQty(data models.ShoesSize) error
+
 	DeleteShoes(id int) error
 	DeleteShoesSize(data models.ShoesSize, all bool) error
 }
@@ -25,9 +29,14 @@ func NewShoesRepository(db *gorm.DB) *shoesRepository {
 	return &shoesRepository{db}
 }
 
-func (r *shoesRepository) CreateShoes(data models.Shoes) error {
+func (r *shoesRepository) CreateShoes(data models.Shoes) (models.Shoes, error) {
 	err := r.db.Create(&data).Error
-	return err
+	return data, err
+}
+
+func (r *shoesRepository) CreateShoesSize(data models.ShoesSize) (models.ShoesSize, error) {
+	err := r.db.Create(&data).Error
+	return data, err
 }
 
 func (r *shoesRepository) GetAllShoes() ([]models.Shoes, error) {

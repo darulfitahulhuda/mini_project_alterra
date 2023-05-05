@@ -41,7 +41,7 @@ func (s *shoesController) CreateShoes(c echo.Context) error {
 		})
 	}
 
-	err := s.shoesCase.CreateShoes(data)
+	shoes, err := s.shoesCase.CreateShoes(data)
 
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, models.ErrorResponse{
@@ -50,9 +50,48 @@ func (s *shoesController) CreateShoes(c echo.Context) error {
 		})
 	}
 
-	return c.JSON(http.StatusCreated, models.SuccessResponse{
+	return c.JSON(http.StatusOK, models.ShoesDetailResponse{
+		Status:  http.StatusOK,
+		Message: "Success create shoes",
+		Data:    shoes,
+	})
+
+}
+
+func (s *shoesController) CreateShoesSize(c echo.Context) error {
+	var data dto.ShoesSize
+
+	if err := c.Bind(&data); err != nil {
+		return c.JSON(http.StatusBadRequest, models.ErrorResponse{
+			Status:  http.StatusBadRequest,
+			Message: "Bad Request",
+		})
+	}
+
+	userId := s.authCase.ExtractTokenUserId(c, models.Admin_Type)
+
+	if userId == 0 {
+		return c.JSON(http.StatusUnauthorized,
+			models.ErrorResponse{
+				Status:  http.StatusUnauthorized,
+				Message: "Token Unauthorized",
+			})
+	}
+
+	size, err := s.shoesCase.CreateShoesSize(data)
+
+	if err != nil {
+
+		return c.JSON(http.StatusBadRequest, models.ErrorResponse{
+			Status:  http.StatusBadRequest,
+			Message: err.Error(),
+		})
+	}
+
+	return c.JSON(http.StatusCreated, models.ShoesSizeResponse{
+		Message: "Success create shoes size",
 		Status:  http.StatusCreated,
-		Message: "Success Craeted",
+		Data:    size,
 	})
 
 }
