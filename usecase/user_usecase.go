@@ -96,13 +96,19 @@ func (u *userUsecase) UpdateUser(id int, payload dto.UpdateUser) (models.User, e
 		Address:     payload.Address,
 	}
 
-	updateUser, err := u.userRepository.UpdateUser(id, user)
+	err := u.userRepository.UpdateUser(id, user)
 
 	if err != nil {
 		return models.User{}, err
 	}
 
-	return updateUser, nil
+	getUser, err := u.userRepository.GetUserById(id)
+
+	if err != nil {
+		return models.User{}, err
+	}
+
+	return getUser, nil
 }
 
 func (u *userUsecase) DeleteUser(id int) (models.User, error) {

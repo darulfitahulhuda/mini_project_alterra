@@ -30,7 +30,6 @@ func InitialMigration() {
 	DB.AutoMigrate(&models.Shoes{})
 	DB.AutoMigrate(&models.ShoesDetail{})
 	DB.AutoMigrate(&models.Carts{})
-	// DB.AutoMigrate(&models.CartItems{})
 	DB.AutoMigrate(&models.PaymentMethod{})
 	DB.AutoMigrate(&models.Shipping{})
 	DB.AutoMigrate(&models.Transaction{})

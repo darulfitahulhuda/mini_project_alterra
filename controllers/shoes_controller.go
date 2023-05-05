@@ -136,9 +136,19 @@ func (s *shoesController) UpdateShoes(c echo.Context) error {
 		})
 	}
 
-	return c.JSON(http.StatusOK, models.SuccessResponse{
+	shoes, err := s.shoesCase.GetDetailShoes(id)
+
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, models.ErrorResponse{
+			Status:  http.StatusBadRequest,
+			Message: err.Error(),
+		})
+	}
+
+	return c.JSON(http.StatusOK, models.ShoesDetailResponse{
 		Status:  http.StatusOK,
-		Message: "Success Updated",
+		Message: "Success update shoes",
+		Data:    shoes,
 	})
 
 }
@@ -173,5 +183,38 @@ func (s *shoesController) DeleteShoes(c echo.Context) error {
 	return c.JSON(http.StatusOK, models.SuccessResponse{
 		Status:  http.StatusOK,
 		Message: "Success Deleted",
+	})
+}
+
+func (s *shoesController) DeleteShoesSize(c echo.Context) error {
+	var data dto.ShoesSize
+
+	if err := c.Bind(&data); err != nil {
+		return c.JSON(http.StatusBadRequest, models.ErrorResponse{
+			Status:  http.StatusBadRequest,
+			Message: "Bad Request",
+		})
+	}
+
+	userId := s.authCase.ExtractTokenUserId(c, models.Admin_Type)
+
+	if userId == 0 {
+		return c.JSON(http.StatusUnauthorized,
+			models.ErrorResponse{
+				Status:  http.StatusUnauthorized,
+				Message: "Token Unauthorized",
+			})
+	}
+
+	if err := s.shoesCase.DeleteShoesSize(data); err != nil {
+		return c.JSON(http.StatusBadRequest, models.ErrorResponse{
+			Status:  http.StatusBadRequest,
+			Message: "Bad Request",
+		})
+	}
+
+	return c.JSON(http.StatusOK, models.SuccessResponse{
+		Status:  http.StatusOK,
+		Message: "Success Deleted Shoes Size",
 	})
 }

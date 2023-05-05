@@ -62,6 +62,7 @@ func main() {
 		r.POST("admin/shoes", shoesController.CreateShoes)
 		r.PUT("admin/shoes/:id", shoesController.UpdateShoes)
 		r.DELETE("admin/shoes/:id", shoesController.DeleteShoes)
+		r.DELETE("admin/shoes/size", shoesController.DeleteShoesSize)
 
 		// Transaction routes
 		r.POST("user/transaction", transactionController.CreateTransaction)
@@ -75,7 +76,7 @@ func main() {
 		r.POST("user/carts", cartController.CreateCart)
 		r.GET("user/carts", cartController.GetAllCarts)
 		r.PUT("user/carts/:id", cartController.UpdateCart)
-		r.DELETE("user/carts/:id", cartController.GetAllCarts)
+		r.DELETE("user/carts/:id", cartController.DeleteCartItem)
 	}
 
 	// shoes routes

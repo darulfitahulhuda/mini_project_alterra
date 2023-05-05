@@ -6,11 +6,11 @@ type Shoes struct {
 	Price       float64     `json:"price"`
 	Gender      string      `json:"gender"`
 	Description string      `json:"description"`
-	Category    string      `json:"category"`
 	Sizes       []ShoesSize `json:"sizes"`
 	Brand       string      `json:"brand"`
 }
 type ShoesSize struct {
-	Size int `json:"size"`
-	Qty  int `json:"qty"`
+	Size    int `json:"size"`
+	Qty     int `json:"qty"`
+	ShoesId int `json:"shoes_id"`
 }

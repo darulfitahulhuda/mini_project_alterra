@@ -12,6 +12,7 @@ type ShoesUsecase interface {
 	GetDetailShoes(id int) (models.ShoesDetailData, error)
 	UpdateShoes(id int, payload dto.Shoes) error
 	DeleteShoes(id int) error
+	DeleteShoesSize(payload dto.ShoesSize) error
 }
 
 type shoesUsecase struct {
@@ -38,7 +39,6 @@ func (u *shoesUsecase) CreateShoes(payload dto.Shoes) error {
 		Price:  payload.Price,
 		ShoesDetail: models.ShoesDetail{
 			Description: payload.Description,
-			Category:    payload.Category,
 			Brand:       payload.Brand,
 		},
 		Sizes: shoesSize,
@@ -73,6 +73,19 @@ func (u *shoesUsecase) GetAllShoes() ([]models.ShoesListData, error) {
 
 func (u *shoesUsecase) GetDetailShoes(id int) (models.ShoesDetailData, error) {
 	shoes, err := u.shoesRepository.GetDetailShoes(id)
+	if err != nil {
+		return models.ShoesDetailData{}, err
+	}
+
+	sizes := make([]dto.ShoesSize, 0)
+
+	for _, v := range shoes.Sizes {
+		sizes = append(sizes, dto.ShoesSize{
+			Size: v.Size,
+			Qty:  v.Qty,
+		})
+
+	}
 
 	detailShoes := models.ShoesDetailData{
 		ID:          int(shoes.ID),
@@ -81,14 +94,10 @@ func (u *shoesUsecase) GetDetailShoes(id int) (models.ShoesDetailData, error) {
 		Price:       shoes.Price,
 		Gender:      shoes.Gender,
 		Description: shoes.ShoesDetail.Description,
-		Category:    shoes.ShoesDetail.Category,
 		Brand:       shoes.ShoesDetail.Brand,
-		Sizes:       shoes.Sizes,
+		Sizes:       sizes,
 	}
 
-	if err != nil {
-		return detailShoes, err
-	}
 	return detailShoes, nil
 }
 
@@ -101,7 +110,6 @@ func (u *shoesUsecase) UpdateShoes(id int, payload dto.Shoes) error {
 		Price:  payload.Price,
 		ShoesDetail: models.ShoesDetail{
 			Description: payload.Description,
-			Category:    payload.Category,
 			Brand:       payload.Brand,
 		},
 	}
@@ -125,6 +133,20 @@ func (u *shoesUsecase) UpdateShoes(id int, payload dto.Shoes) error {
 
 func (u *shoesUsecase) DeleteShoes(id int) error {
 	if err := u.shoesRepository.DeleteShoes(id); err != nil {
+		return err
+	}
+	if err := u.shoesRepository.DeleteShoesSize(models.ShoesSize{ShoesId: uint(id)}, true); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (u *shoesUsecase) DeleteShoesSize(payload dto.ShoesSize) error {
+	data := models.ShoesSize{
+		ShoesId: uint(payload.ShoesId),
+		Size:    payload.Size,
+	}
+	if err := u.shoesRepository.DeleteShoesSize(data, false); err != nil {
 		return err
 	}
 	return nil

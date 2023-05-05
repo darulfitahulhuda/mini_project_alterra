@@ -1,6 +1,8 @@
 package models
 
 import (
+	"main/dto"
+
 	"github.com/lib/pq"
 	"gorm.io/gorm"
 )
@@ -19,7 +21,6 @@ type ShoesDetail struct {
 	*gorm.Model
 	ShoesId     uint   `json:"shoes_id" form:"shoes_id" gorm:"column:shoes_id"`
 	Description string `json:"description" form:"description"`
-	Category    string `json:"category" form:"category"`
 	Brand       string `json:"brand" form:"brand"`
 }
 
@@ -48,13 +49,12 @@ type ShoesDetailResponse struct {
 }
 
 type ShoesDetailData struct {
-	ID          int         `json:"id"`
-	Name        string      `json:"name"`
-	Images      []string    `json:"images"`
-	Price       float64     `json:"price"`
-	Gender      string      `json:"gender"`
-	Description string      `json:"description"`
-	Category    string      `json:"category"`
-	Brand       string      `json:"brand"`
-	Sizes       []ShoesSize `json:"sizes"`
+	ID          int             `json:"id"`
+	Name        string          `json:"name"`
+	Images      []string        `json:"images"`
+	Price       float64         `json:"price"`
+	Gender      string          `json:"gender"`
+	Description string          `json:"description"`
+	Brand       string          `json:"brand"`
+	Sizes       []dto.ShoesSize `json:"sizes"`
 }

@@ -39,7 +39,7 @@ func (r *cartRepository) GetAllCarts(userId int) ([]models.Carts, error) {
 func (r *cartRepository) UpdateCart(id int, data models.Carts) (models.Carts, error) {
 	var cart models.Carts
 
-	if err := r.db.Model(&cart).Where("ID = ?", id).Error; err != nil {
+	if err := r.db.Model(&cart).Where("ID = ?", id).Updates(data).Error; err != nil {
 		return models.Carts{}, err
 	}
 	return cart, nil

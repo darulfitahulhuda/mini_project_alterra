@@ -12,7 +12,7 @@ type UserRepository interface {
 	LoginUser(data models.User) (models.User, error)
 	GetUserById(id int) (models.User, error)
 	DeleteUser(id int) (models.User, error)
-	UpdateUser(id int, data models.User) (models.User, error)
+	UpdateUser(id int, data models.User) error
 }
 
 type userRepository struct {
@@ -62,9 +62,9 @@ func (r *userRepository) DeleteUser(id int) (models.User, error) {
 
 }
 
-func (r *userRepository) UpdateUser(id int, data models.User) (models.User, error) {
-	if e := r.db.Model(&data).Where("ID = ?", id).Updates(data).Error; e != nil {
-		return data, e
+func (r *userRepository) UpdateUser(id int, data models.User) error {
+	if err := r.db.Model(&models.User{}).Where("ID = ?", id).Updates(data).Error; err != nil {
+		return err
 	}
-	return data, nil
+	return nil
 }

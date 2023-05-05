@@ -15,6 +15,7 @@ type ShoesRepository interface {
 	UpdateShoesSize(data models.ShoesSize) error
 	ReduceShoesQty(data models.ShoesSize) error
 	DeleteShoes(id int) error
+	DeleteShoesSize(data models.ShoesSize, all bool) error
 }
 type shoesRepository struct {
 	db *gorm.DB
@@ -43,7 +44,7 @@ func (r *shoesRepository) GetDetailShoes(id int) (models.Shoes, error) {
 	var shoes models.Shoes
 
 	if err := r.db.Preload("ShoesDetail").Preload("Sizes").Find(&shoes, id).Error; err != nil {
-		return shoes, err
+		return models.Shoes{}, err
 	}
 	return shoes, nil
 }
@@ -101,5 +102,19 @@ func (r *shoesRepository) DeleteShoes(id int) error {
 	if err := r.db.Delete(&shoes, id).Error; err != nil {
 		return err
 	}
+	return nil
+}
+
+func (r *shoesRepository) DeleteShoesSize(data models.ShoesSize, all bool) error {
+	if all {
+		if err := r.db.Where("shoes_id = ?", data.ShoesId).Delete(&data).Error; err != nil {
+			return err
+		}
+	} else {
+		if err := r.db.Where("shoes_id = ? AND size = ?", data.ShoesId, data.Size).Delete(&data).Error; err != nil {
+			return err
+		}
+	}
+
 	return nil
 }
