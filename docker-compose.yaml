@@ -1,0 +1,25 @@
+version: '3.8'
+
+services:
+  app:
+    build: .
+    container_name: mini_project
+    ports:
+      - "8080:8080"
+    depends_on:
+      - "db"
+
+  db:
+    image: postgres:latest
+    container_name: db_mini_project
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_DB=mini_project
+    ports:
+      - '5431:5431'
+    volumes:
+      - database_postgres:/var/lib/postgresql/data
+
+volumes:
+  database_postgres:

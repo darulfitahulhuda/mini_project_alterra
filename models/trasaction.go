@@ -4,10 +4,13 @@ import (
 	"gorm.io/gorm"
 )
 
-const PAYMENT_STATUS_WAITING = "waiting"
+const PAYMENT_STATUS_WAITING = "Waiting"
+const PAYMENT_STATUS_SUCCESS = "Success"
 
-// const PAYMENT_STATUS_SUCCESS = "success"
-const TRANSACTION_WAITING_PAYMENT = "waiting payment"
+const TRANSACTION_PAYMENT_WAITING = "Payment waiting"
+const TRANSACTION_ADMIN_CONFIRMATION = "Waiting for admin confirmation"
+const TRANSACTION_SHIPPER_SENT = "The package is being delivered by a courier"
+const TRANSACTION_SHIPPER_RECEIVED = "Order has been received"
 
 type Transaction struct {
 	*gorm.Model

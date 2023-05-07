@@ -17,7 +17,7 @@ func Init() {
 }
 
 func InitDB() {
-	dsn := "host=localhost user=postgres password= dbname=mini_project port=5431 sslmode=disable TimeZone=Asia/Shanghai"
+	dsn := "host=docker.for.mac.localhost user=postgres password= dbname=mini_project port=5431 sslmode=disable TimeZone=Asia/Jakarta"
 	var err error
 	DB, err = gorm.Open(postgres.Open(dsn), &gorm.Config{})
 	if err != nil {

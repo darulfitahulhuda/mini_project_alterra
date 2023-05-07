@@ -17,7 +17,7 @@ type TransactionRepository interface {
 	UpdateTransaction(id int, data models.Transaction) error
 	UpdateTransactionDetail(data []models.TransactionDetail) error
 	UpdateShipping(id int, data models.Shipping) error
-	UpdatePaymentMethod(data models.PaymentMethod) error
+	UpdatePaymentMethod(data models.PaymentMethod) (models.PaymentMethod, error)
 
 	SoftDeleteTransaction(id int) error
 }
@@ -99,16 +99,26 @@ func (r *transactionRepository) UpdateShipping(id int, data models.Shipping) err
 	return nil
 }
 
-func (r *transactionRepository) UpdatePaymentMethod(data models.PaymentMethod) error {
+func (r *transactionRepository) UpdatePaymentMethod(data models.PaymentMethod) (models.PaymentMethod, error) {
 	var payment models.PaymentMethod
 
-	if err := r.db.Model(&payment).Where("code_payment = ?", data.CodePayment).Updates(data).Error; err != nil {
-		return err
+	// if err := r.db.Model(&payment).Where("code_payment = ?", data.CodePayment).Updates(data).Error; err != nil {
+	// 	return err
+	// }
+	if err := r.db.Where("code_payment = ?", data.CodePayment).First(&payment).Error; err != nil {
+		return models.PaymentMethod{}, err
 	}
 
-	fmt.Printf("UpdatePaymentMethod: %d", payment.ID)
+	fmt.Printf("UpdatePaymentMethod: %d", payment.TransactionId)
 
-	return nil
+	payment.Status = data.Status
+
+	if err := r.db.Save(&payment).Error; err != nil {
+		return models.PaymentMethod{}, err
+
+	}
+
+	return payment, nil
 }
 
 func (r *transactionRepository) SoftDeleteTransaction(id int) error {

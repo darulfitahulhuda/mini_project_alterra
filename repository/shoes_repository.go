@@ -10,7 +10,7 @@ type ShoesRepository interface {
 	CreateShoes(data models.Shoes) (models.Shoes, error)
 	CreateShoesSize(data models.ShoesSize) (models.ShoesSize, error)
 
-	GetAllShoes() ([]models.Shoes, error)
+	GetAllShoes(gender string) ([]models.Shoes, error)
 	GetDetailShoes(id int) (models.Shoes, error)
 	GetShoesSize(data models.ShoesSize) (models.ShoesSize, error)
 
@@ -39,13 +39,19 @@ func (r *shoesRepository) CreateShoesSize(data models.ShoesSize) (models.ShoesSi
 	return data, err
 }
 
-func (r *shoesRepository) GetAllShoes() ([]models.Shoes, error) {
+func (r *shoesRepository) GetAllShoes(gender string) ([]models.Shoes, error) {
 	shoes := make([]models.Shoes, 0)
-
-	if err := r.db.Order("ID desc").Limit(10).Find(&shoes).Error; err != nil {
-		return shoes, err
+	if gender == "" {
+		if err := r.db.Order("ID desc").Limit(10).Find(&shoes).Error; err != nil {
+			return shoes, err
+		}
+	} else {
+		if err := r.db.Where("gender = ?", gender).Order("ID desc").Limit(10).Find(&shoes).Error; err != nil {
+			return shoes, err
+		}
 
 	}
+
 	return shoes, nil
 }
 

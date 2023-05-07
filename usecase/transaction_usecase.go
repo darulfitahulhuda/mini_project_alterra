@@ -13,7 +13,7 @@ type TransactionUsecase interface {
 	CreateTransaction(payload dto.Transaction) (models.Transaction, error)
 	GetAllTransaction() ([]models.Transaction, error)
 	GetTransactionByUser(userId int) ([]models.Transaction, error)
-	UpdateTransaction(id int, payload dto.Transaction) error
+	UpdateTransaction(id int, payload dto.Transaction) (models.Transaction, error)
 	UpdatePaymentMethod(payload dto.PaymentStatus) error
 	SoftDeleteTransaction(id int) error
 }
@@ -59,7 +59,7 @@ func (u *transactionUsecase) CreateTransaction(payload dto.Transaction) (models.
 	transaction := models.Transaction{
 		UserId:     uint(payload.UserId),
 		TotalPrice: totalPrice,
-		Status:     models.TRANSACTION_WAITING_PAYMENT,
+		Status:     models.TRANSACTION_PAYMENT_WAITING,
 		PaymentMethod: models.PaymentMethod{
 			Name:        payload.NamePayment,
 			CodePayment: randomCodePayment(payload.Products[0].ShoesId, payload.UserId),
@@ -99,7 +99,7 @@ func (u *transactionUsecase) GetTransactionByUser(userId int) ([]models.Transact
 
 }
 
-func (u *transactionUsecase) UpdateTransaction(id int, payload dto.Transaction) error {
+func (u *transactionUsecase) UpdateTransaction(id int, payload dto.Transaction) (models.Transaction, error) {
 	var totalPrice float64
 	var transactionDetails []models.TransactionDetail
 
@@ -113,7 +113,7 @@ func (u *transactionUsecase) UpdateTransaction(id int, payload dto.Transaction) 
 	}
 
 	if err := u.transactionRepo.UpdateTransactionDetail(transactionDetails); err != nil {
-		return err
+		return models.Transaction{}, err
 	}
 
 	shipping := models.Shipping{
@@ -124,13 +124,14 @@ func (u *transactionUsecase) UpdateTransaction(id int, payload dto.Transaction) 
 	}
 
 	if err := u.transactionRepo.UpdateShipping(id, shipping); err != nil {
-		return err
+		return models.Transaction{}, err
 
 	}
 
 	getTransaction, err := u.transactionRepo.GetTransactionById(id)
 	if err != nil {
-		return err
+		return models.Transaction{}, err
+
 	}
 
 	for _, v := range getTransaction.TransactionDetail {
@@ -147,19 +148,30 @@ func (u *transactionUsecase) UpdateTransaction(id int, payload dto.Transaction) 
 	}
 
 	if err := u.transactionRepo.UpdateTransaction(id, transaction); err != nil {
-		return err
+		return models.Transaction{}, err
+
 	}
 
-	return nil
+	getTransactionId, err := u.transactionRepo.GetTransactionById(id)
+	if err != nil {
+		return models.Transaction{}, err
+
+	}
+
+	return getTransactionId, nil
 }
 
 func (u *transactionUsecase) UpdatePaymentMethod(payload dto.PaymentStatus) error {
 	data := models.PaymentMethod{
-		Name:        payload.Name,
 		CodePayment: payload.CodePayment,
-		Status:      payload.StatusPayment,
+		Status:      models.PAYMENT_STATUS_SUCCESS,
 	}
-	if err := u.transactionRepo.UpdatePaymentMethod(data); err != nil {
+	paymentMethod, err := u.transactionRepo.UpdatePaymentMethod(data)
+	if err != nil {
+		return err
+	}
+
+	if err := u.transactionRepo.UpdateTransaction(int(paymentMethod.TransactionId), models.Transaction{Status: models.TRANSACTION_ADMIN_CONFIRMATION}); err != nil {
 		return err
 	}
 
@@ -178,8 +190,8 @@ func randomCodePayment(shoesId, userId int) string {
 	rand.Seed(time.Now().UnixNano())
 	const charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
 
-	// Create a byte slice with length 5 to hold the random string
-	randomCaracter := make([]byte, 10)
+	// Create a byte slice with length 15 to hold the random string
+	randomCaracter := make([]byte, 15)
 
 	for i := range randomCaracter {
 		// Choose a random character from the character set

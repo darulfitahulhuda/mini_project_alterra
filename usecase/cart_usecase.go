@@ -8,7 +8,7 @@ import (
 )
 
 type CartUsecase interface {
-	CreateCart(userId int, payload dto.Cart) error
+	CreateCart(userId int, payload dto.Cart) (models.Carts, error)
 	GetAllCarts(userId int) ([]models.Carts, error)
 	UpdateCart(id, userId int, payload dto.Cart) (models.Carts, error)
 	DeleteCartItem(id int) error
@@ -23,7 +23,7 @@ func NewCartUsecase(cartRepo repository.CartRepository, shoesRepo repository.Sho
 	return &cartUsecase{cartRepo: cartRepo, shoesRepo: shoesRepo}
 }
 
-func (u *cartUsecase) CreateCart(userId int, payload dto.Cart) error {
+func (u *cartUsecase) CreateCart(userId int, payload dto.Cart) (models.Carts, error) {
 	data := models.Carts{
 		UserId:  uint(userId),
 		ShoesId: uint(payload.ShoesId),
@@ -31,12 +31,19 @@ func (u *cartUsecase) CreateCart(userId int, payload dto.Cart) error {
 		Status:  payload.Status,
 		Qty:     payload.Qty,
 	}
-
-	if err := u.cartRepo.CreateCart(data); err != nil {
-		return err
+	cart, err := u.cartRepo.CreateCart(data)
+	if err != nil {
+		return models.Carts{}, err
 	}
 
-	return nil
+	shoes, err := u.shoesRepo.GetDetailShoes(int(cart.ShoesId))
+
+	if err != nil {
+		return models.Carts{}, err
+	}
+	cart.Shoes = shoes
+
+	return cart, nil
 }
 func (u *cartUsecase) GetAllCarts(userId int) ([]models.Carts, error) {
 	carts := make([]models.Carts, 0)
@@ -58,11 +65,11 @@ func (u *cartUsecase) GetAllCarts(userId int) ([]models.Carts, error) {
 		}
 
 		if data.Qty >= v.Qty {
-			v.Status = "available"
+			v.Status = "Available"
 		} else if data.Qty <= 0 {
-			v.Status = "not available"
+			v.Status = "Not available"
 		} else {
-			v.Status = "availabe " + strconv.Itoa(data.Qty)
+			v.Status = "Availabe only " + strconv.Itoa(data.Qty)
 		}
 
 		carts = append(carts, v)
@@ -72,12 +79,33 @@ func (u *cartUsecase) GetAllCarts(userId int) ([]models.Carts, error) {
 
 }
 func (u *cartUsecase) UpdateCart(id, userId int, payload dto.Cart) (models.Carts, error) {
+	shoes, err := u.shoesRepo.GetDetailShoes(int(payload.ShoesId))
+	status := "Available"
+
+	if err != nil {
+		return models.Carts{}, err
+	}
+
+	for _, v := range shoes.Sizes {
+		if v.Size == payload.Size {
+			if v.Qty >= payload.Qty {
+				status = "Available"
+			} else if v.Qty <= 0 {
+				status = "Not available"
+			} else {
+				status = "Availabe only " + strconv.Itoa(v.Qty)
+			}
+
+		}
+
+	}
+
 	data := models.Carts{
 		UserId:  uint(userId),
 		ShoesId: uint(payload.ShoesId),
 		Qty:     payload.Qty,
 		Size:    payload.Size,
-		Status:  payload.Status,
+		Status:  status,
 	}
 
 	result, err := u.cartRepo.UpdateCart(id, data)
@@ -86,9 +114,12 @@ func (u *cartUsecase) UpdateCart(id, userId int, payload dto.Cart) (models.Carts
 		return result, err
 	}
 
+	result.Shoes = shoes
+
 	return result, nil
 
 }
+
 func (u *cartUsecase) DeleteCartItem(id int) error {
 	err := u.cartRepo.DeleteCartItem(id)
 	if err != nil {

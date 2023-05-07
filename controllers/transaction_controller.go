@@ -41,6 +41,8 @@ func (t *transactionController) CreateTransaction(c echo.Context) error {
 		})
 	}
 
+	data.UserId = userId
+
 	transaction, err := t.transactionUsecase.CreateTransaction(data)
 
 	if err != nil {
@@ -141,7 +143,7 @@ func (t *transactionController) UpdateTransaction(c echo.Context) error {
 		})
 	}
 
-	erro := t.transactionUsecase.UpdateTransaction(id, data)
+	transaction, erro := t.transactionUsecase.UpdateTransaction(id, data)
 
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, models.ErrorResponse{
@@ -151,10 +153,13 @@ func (t *transactionController) UpdateTransaction(c echo.Context) error {
 
 	}
 
-	return c.JSON(http.StatusOK, models.SuccessResponse{
-		Status:  http.StatusOK,
-		Message: "Success Updated",
-	})
+	return c.JSON(http.StatusOK,
+		models.HttpResponse{
+			Status:  http.StatusOK,
+			Message: "Success Updated",
+			Data:    transaction,
+		},
+	)
 }
 
 func (t *transactionController) UpdatePaymentMethod(c echo.Context) error {
@@ -192,7 +197,7 @@ func (t *transactionController) UpdatePaymentMethod(c echo.Context) error {
 	})
 }
 func (t *transactionController) SoftDeleteTransaction(c echo.Context) error {
-	userId := t.authUsecase.ExtractTokenUserId(c, models.Admin_Type)
+	userId := t.authUsecase.ExtractTokenUserId(c, models.User_Type)
 
 	if userId == 0 {
 		return c.JSON(http.StatusUnauthorized,
@@ -203,6 +208,7 @@ func (t *transactionController) SoftDeleteTransaction(c echo.Context) error {
 	}
 
 	id, err := strconv.Atoi(c.Param("id"))
+
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, models.ErrorResponse{
 			Status:  http.StatusBadRequest,
@@ -224,5 +230,3 @@ func (t *transactionController) SoftDeleteTransaction(c echo.Context) error {
 		Message: "Success Deleted",
 	})
 }
-
-// 	(id int) error

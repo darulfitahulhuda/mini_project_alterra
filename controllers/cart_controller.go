@@ -39,16 +39,31 @@ func (cc *cartController) CreateCart(c echo.Context) error {
 				Message: "Token Unauthorized",
 			})
 	}
-	if err := cc.cartUsecase.CreateCart(userId, payload); err != nil {
+	cart, err := cc.cartUsecase.CreateCart(userId, payload)
+	if err != nil {
 		return c.JSON(http.StatusBadRequest, models.ErrorResponse{
 			Status:  http.StatusBadRequest,
 			Message: err.Error(),
 		})
 	}
-	return c.JSON(http.StatusCreated, models.SuccessResponse{
-		Status:  http.StatusCreated,
-		Message: "Success Craeted",
-	})
+
+	return c.JSON(http.StatusCreated,
+		models.HttpResponse{
+			Status:  http.StatusCreated,
+			Message: "Success created",
+			Data: models.CartResponse{
+				ID:         int(cart.ID),
+				Name:       cart.Shoes.Name,
+				ShoesId:    int(cart.ShoesId),
+				Price:      cart.Shoes.Price,
+				Size:       cart.Size,
+				Qty:        cart.Qty,
+				TotalPrice: float64(cart.Qty) * cart.Shoes.Price,
+				Status:     cart.Status,
+				Images:     cart.Shoes.Images,
+			},
+		},
+	)
 
 }
 
@@ -64,17 +79,32 @@ func (cc *cartController) GetAllCarts(c echo.Context) error {
 
 	carts, err := cc.cartUsecase.GetAllCarts(userId)
 	if err != nil {
-
 		return c.JSON(http.StatusBadRequest, models.ErrorResponse{
 			Status:  http.StatusBadRequest,
 			Message: err.Error(),
 		})
 	}
 
-	return c.JSON(http.StatusOK, models.CartListResponse{
+	cartsResponse := make([]models.CartResponse, 0)
+
+	for _, v := range carts {
+		cartsResponse = append(cartsResponse, models.CartResponse{
+			ID:         int(v.ID),
+			Name:       v.Shoes.Name,
+			ShoesId:    int(v.ShoesId),
+			Price:      v.Shoes.Price,
+			Size:       v.Size,
+			Qty:        v.Qty,
+			TotalPrice: float64(v.Qty) * v.Shoes.Price,
+			Status:     v.Status,
+			Images:     v.Shoes.Images,
+		})
+	}
+
+	return c.JSON(http.StatusOK, models.HttpResponse{
 		Message: "Success get all carts",
 		Status:  http.StatusOK,
-		Data:    carts,
+		Data:    cartsResponse,
 	})
 }
 
@@ -115,11 +145,23 @@ func (cc *cartController) UpdateCart(c echo.Context) error {
 		})
 	}
 
-	return c.JSON(http.StatusOK, models.CartResponse{
-		Message: "Success update cart",
-		Status:  http.StatusOK,
-		Data:    cart,
-	})
+	return c.JSON(http.StatusCreated,
+		models.HttpResponse{
+			Status:  http.StatusCreated,
+			Message: "Success update cart",
+			Data: models.CartResponse{
+				ID:         int(cart.ID),
+				Name:       cart.Shoes.Name,
+				ShoesId:    int(cart.ShoesId),
+				Price:      cart.Shoes.Price,
+				Size:       cart.Size,
+				Qty:        cart.Qty,
+				TotalPrice: float64(cart.Qty) * cart.Shoes.Price,
+				Status:     cart.Status,
+				Images:     cart.Shoes.Images,
+			},
+		},
+	)
 
 }
 
@@ -154,5 +196,3 @@ func (cc *cartController) DeleteCartItem(c echo.Context) error {
 		Message: "Success deleted",
 	})
 }
-
-// (id int) error

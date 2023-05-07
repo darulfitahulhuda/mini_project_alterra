@@ -97,7 +97,9 @@ func (s *shoesController) CreateShoesSize(c echo.Context) error {
 }
 
 func (s *shoesController) GetAllShoes(c echo.Context) error {
-	shoes, err := s.shoesCase.GetAllShoes()
+	gender := c.QueryParam("gender")
+
+	shoes, err := s.shoesCase.GetAllShoes(gender)
 
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, models.ErrorResponse{

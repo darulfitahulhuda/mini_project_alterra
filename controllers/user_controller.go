@@ -24,13 +24,19 @@ func (u *userController) Create(c echo.Context) error {
 	var data dto.CreateUser
 
 	if err := c.Bind(&data); err != nil {
-		return c.JSON(http.StatusBadRequest, err)
+		return c.JSON(http.StatusBadRequest, models.HttpResponse{
+			Status:  http.StatusBadRequest,
+			Message: err.Error(),
+		})
 	}
 
 	user, err := u.userCase.CreateUser(data)
 
 	if err != nil {
-		return c.JSON(http.StatusBadRequest, err)
+		return c.JSON(http.StatusBadRequest, models.HttpResponse{
+			Status:  http.StatusBadRequest,
+			Message: err.Error(),
+		})
 	}
 
 	token, err := u.authCase.CreateToken(dto.CreateToken{
@@ -39,29 +45,44 @@ func (u *userController) Create(c echo.Context) error {
 	})
 
 	if err != nil {
-		return c.JSON(http.StatusBadRequest, err)
+		return c.JSON(http.StatusBadRequest, models.HttpResponse{
+			Status:  http.StatusBadRequest,
+			Message: err.Error(),
+		})
+
 	}
 
-	return c.JSON(http.StatusCreated, echo.Map{
-		"data":    user,
-		"message": "Success Create User",
-		"token":   token,
-	})
+	return c.JSON(http.StatusCreated,
+		models.HttpResponse{
+			Status:  http.StatusCreated,
+			Message: "Success Create User",
+			Data: models.AuthResponse{
+				ID:       int(user.ID),
+				Name:     user.Email,
+				Email:    user.Email,
+				UserType: user.UserType,
+				Token:    token,
+			},
+		},
+	)
 }
 
 func (u *userController) LoginUser(c echo.Context) error {
 	user := dto.LoginUser{}
 
 	if err := c.Bind(&user); err != nil {
-		return c.JSON(http.StatusBadRequest, err)
+		return c.JSON(http.StatusBadRequest, models.HttpResponse{
+			Status:  http.StatusBadRequest,
+			Message: err.Error(),
+		})
 	}
 
 	users, err := u.userCase.LoginUser(user)
 
 	if err != nil {
-		return c.JSON(http.StatusBadRequest, echo.Map{
-			"status":  http.StatusBadRequest,
-			"message": "password or email is wrong",
+		return c.JSON(http.StatusBadRequest, models.HttpResponse{
+			Status:  http.StatusBadRequest,
+			Message: "Email or password is wrong",
 		})
 	}
 
@@ -71,40 +92,59 @@ func (u *userController) LoginUser(c echo.Context) error {
 	})
 
 	if err != nil {
-		return c.JSON(http.StatusBadRequest, err)
+		return c.JSON(http.StatusBadRequest, models.HttpResponse{
+			Status:  http.StatusBadRequest,
+			Message: err.Error(),
+		})
 	}
 
-	return c.JSON(http.StatusCreated, echo.Map{
-		"message": "Success Create User",
-		"data":    users,
-		"token":   token,
-	})
+	return c.JSON(http.StatusOK,
+		models.HttpResponse{
+			Status:  http.StatusOK,
+			Message: "Success Login User",
+			Data: models.AuthResponse{
+				ID:       int(users.ID),
+				Token:    token,
+				Name:     users.Email,
+				Email:    users.Email,
+				UserType: users.UserType,
+			},
+		},
+	)
 }
 
 func (u *userController) GetUserByAuth(c echo.Context) error {
 	userId := u.authCase.ExtractTokenUserId(c, models.User_Type)
 
 	if userId == 0 {
-		return c.JSON(http.StatusUnauthorized, echo.Map{
-			"status":  http.StatusUnauthorized,
-			"message": "Token Unauthorized",
+		return c.JSON(http.StatusUnauthorized, models.HttpResponse{
+			Status:  http.StatusUnauthorized,
+			Message: "Token Unauthorized",
 		})
 	}
 
 	user, err := u.userCase.GetUserById(userId)
 
 	if err != nil {
-		return c.JSON(http.StatusBadRequest, echo.Map{
-			"status":  http.StatusBadRequest,
-			"message": err.Error(),
+		return c.JSON(http.StatusBadRequest, models.HttpResponse{
+			Status:  http.StatusBadRequest,
+			Message: err.Error(),
 		})
 	}
 
-	return c.JSON(http.StatusOK, echo.Map{
-		"status":  http.StatusOK,
-		"message": "Success get user",
-		"data":    user,
+	return c.JSON(http.StatusOK, models.HttpResponse{
+		Status:  http.StatusOK,
+		Message: "Success get user",
+		Data: models.UserResponse{
+			ID:          int(user.ID),
+			Name:        user.Name,
+			Email:       user.Email,
+			DateOfBirth: user.DateOfBirth,
+			UserType:    user.UserType,
+			Address:     user.Address,
+		},
 	})
+
 }
 
 func (u *userController) UpdateUser(c echo.Context) error {
@@ -113,31 +153,38 @@ func (u *userController) UpdateUser(c echo.Context) error {
 	userId := u.authCase.ExtractTokenUserId(c, models.User_Type)
 
 	if userId == 0 {
-		return c.JSON(http.StatusUnauthorized, echo.Map{
-			"status":  http.StatusUnauthorized,
-			"message": "Token Unauthorized",
+		return c.JSON(http.StatusUnauthorized, models.HttpResponse{
+			Status:  http.StatusUnauthorized,
+			Message: "Token Unauthorized",
 		})
 	}
 
 	if err := c.Bind(&data); err != nil {
-		return c.JSON(http.StatusBadRequest, echo.Map{
-			"status":  http.StatusBadRequest,
-			"message": err.Error(),
+		return c.JSON(http.StatusBadRequest, models.HttpResponse{
+			Status:  http.StatusBadRequest,
+			Message: err.Error(),
 		})
 	}
 
 	user, err := u.userCase.UpdateUser(userId, data)
 	if err != nil {
-		return c.JSON(http.StatusBadRequest, echo.Map{
-			"status":  http.StatusBadRequest,
-			"message": err.Error(),
+		return c.JSON(http.StatusBadRequest, models.HttpResponse{
+			Status:  http.StatusBadRequest,
+			Message: err.Error(),
 		})
 	}
 
-	return c.JSON(http.StatusOK, echo.Map{
-		"status":  http.StatusOK,
-		"message": "Success update user",
-		"data":    user,
+	return c.JSON(http.StatusOK, models.HttpResponse{
+		Status:  http.StatusOK,
+		Message: "Success update user",
+		Data: models.UserResponse{
+			ID:          int(user.ID),
+			Name:        user.Name,
+			Email:       user.Email,
+			DateOfBirth: user.DateOfBirth,
+			UserType:    user.UserType,
+			Address:     user.Address,
+		},
 	})
 
 }
@@ -145,23 +192,22 @@ func (u *userController) DeleteUser(c echo.Context) error {
 	userId := u.authCase.ExtractTokenUserId(c, models.User_Type)
 
 	if userId == 0 {
-		return c.JSON(http.StatusUnauthorized, echo.Map{
-			"status":  http.StatusUnauthorized,
-			"message": "Token Unauthorized",
+		return c.JSON(http.StatusUnauthorized, models.HttpResponse{
+			Status:  http.StatusUnauthorized,
+			Message: "Token Unauthorized",
 		})
 	}
 
 	_, err := u.userCase.DeleteUser(userId)
 	if err != nil {
-		return c.JSON(http.StatusBadRequest, echo.Map{
-			"status":  http.StatusBadRequest,
-			"message": err.Error(),
+		return c.JSON(http.StatusBadRequest, models.HttpResponse{
+			Status:  http.StatusBadRequest,
+			Message: err.Error(),
 		})
 	}
 
-	return c.JSON(http.StatusOK, echo.Map{
-		"status":  http.StatusOK,
-		"message": "Success Delete user",
+	return c.JSON(http.StatusBadRequest, models.HttpResponse{
+		Status:  http.StatusBadRequest,
+		Message: "Success Delete user",
 	})
-
 }

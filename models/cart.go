@@ -19,9 +19,14 @@ type CartListResponse struct {
 	Status  int     `json:"status"`
 	Data    []Carts `json:"data"`
 }
-
 type CartResponse struct {
-	Message string `json:"message"`
-	Status  int    `json:"status"`
-	Data    Carts  `json:"data"`
+	ID         int      `json:"id"`
+	ShoesId    int      `json:"shoes_id"`
+	Size       int      `json:"size" form:"size"`
+	Qty        int      `json:"qty" form:"qty"`
+	Price      float64  `json:"price"`
+	TotalPrice float64  `json:"total_price"`
+	Status     string   `json:"status" form:"status"`
+	Name       string   `json:"name"`
+	Images     []string `json:"images"`
 }

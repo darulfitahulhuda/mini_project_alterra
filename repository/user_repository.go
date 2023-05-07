@@ -1,6 +1,7 @@
 package repository
 
 import (
+	"errors"
 	"main/models"
 
 	"gorm.io/gorm"
@@ -24,8 +25,14 @@ func NewUserRepository(db *gorm.DB) *userRepository {
 }
 
 func (r *userRepository) Create(data models.User) (models.User, error) {
-	err := r.db.Create(&data).Error
-	return data, err
+	var user models.User
+	if err := r.db.Where("email = ?", data.Email).First(&user).Error; err == gorm.ErrRecordNotFound {
+		err := r.db.Create(&data).Error
+		return data, err
+	}
+
+	return user, errors.New("email already exist")
+
 }
 
 func (r *userRepository) GetAllUsers() ([]models.User, error) {
