@@ -41,7 +41,7 @@ func (r *transactionRepository) CreateTransaction(data models.Transaction) (mode
 func (r *transactionRepository) GetAllTransaction() ([]models.Transaction, error) {
 	var transactions []models.Transaction
 
-	if err := r.db.Preload("PaymentMethod").Preload("TransactionDetail").Preload("Shipping").Find(&transactions).Error; err != nil {
+	if err := r.db.Order("ID desc").Preload("PaymentMethod").Preload("TransactionDetail").Preload("Shipping").Find(&transactions).Error; err != nil {
 		return []models.Transaction{}, err
 	}
 
@@ -102,9 +102,6 @@ func (r *transactionRepository) UpdateShipping(id int, data models.Shipping) err
 func (r *transactionRepository) UpdatePaymentMethod(data models.PaymentMethod) (models.PaymentMethod, error) {
 	var payment models.PaymentMethod
 
-	// if err := r.db.Model(&payment).Where("code_payment = ?", data.CodePayment).Updates(data).Error; err != nil {
-	// 	return err
-	// }
 	if err := r.db.Where("code_payment = ?", data.CodePayment).First(&payment).Error; err != nil {
 		return models.PaymentMethod{}, err
 	}

@@ -1,6 +1,7 @@
 package usecase
 
 import (
+	"errors"
 	"main/dto"
 	"main/models"
 	"main/repository"
@@ -104,9 +105,15 @@ func (u *transactionUsecase) UpdateTransaction(id int, payload dto.TransactionRe
 	var transactionDetails []models.TransactionDetail
 
 	for _, v := range payload.Products {
+		getShoes, err := u.shoesRepo.GetDetailShoes(v.ID)
+
+		if err != nil {
+			return models.Transaction{}, errors.New("Get ID " + strconv.Itoa(v.ID) + "Error")
+		}
+
 		transactionDetails = append(transactionDetails, models.TransactionDetail{
-			ShoesId: uint(v.ShoesId),
-			Price:   v.Price,
+			ShoesId: getShoes.ID,
+			Price:   getShoes.Price,
 			Qty:     v.Qty,
 			ID:      uint(v.ID),
 		})
@@ -125,7 +132,6 @@ func (u *transactionUsecase) UpdateTransaction(id int, payload dto.TransactionRe
 
 	if err := u.transactionRepo.UpdateShipping(id, shipping); err != nil {
 		return models.Transaction{}, err
-
 	}
 
 	getTransaction, err := u.transactionRepo.GetTransactionById(id)

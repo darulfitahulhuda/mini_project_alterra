@@ -37,7 +37,7 @@ func (r *userRepository) Create(data models.User) (models.User, error) {
 
 func (r *userRepository) GetAllUsers() ([]models.User, error) {
 	users := make([]models.User, 0)
-	if err := r.db.Find(&users).Error; err != nil {
+	if err := r.db.Where("user_type = ?", "user").Order("ID desc").Find(&users).Error; err != nil {
 		return users, err
 	}
 	return users, nil

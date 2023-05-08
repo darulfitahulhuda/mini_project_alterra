@@ -52,10 +52,12 @@ func (t *transactionController) CreateTransaction(c echo.Context) error {
 		})
 	}
 
+	transactionResponse := changeToTransactionResponse(transaction)
+
 	return c.JSON(http.StatusCreated, models.HttpResponse{
 		Status:  http.StatusCreated,
 		Message: "Success Craeted",
-		Data:    transaction,
+		Data:    transactionResponse,
 	})
 }
 
@@ -79,10 +81,12 @@ func (t *transactionController) GetAllTransaction(c echo.Context) error {
 		})
 	}
 
+	transactionResponse := changeToArrayTransactionResponse(transactions)
+
 	return c.JSON(http.StatusOK, models.HttpResponse{
 		Status:  http.StatusOK,
 		Message: "Success Get all transaction",
-		Data:    transactions,
+		Data:    transactionResponse,
 	})
 
 }
@@ -107,10 +111,12 @@ func (t *transactionController) GetTransactionByUser(c echo.Context) error {
 		})
 	}
 
+	transactionResponse := changeToArrayTransactionResponse(transactions)
+
 	return c.JSON(http.StatusOK, models.HttpResponse{
 		Status:  http.StatusOK,
 		Message: "Success Get Transaction",
-		Data:    transactions,
+		Data:    transactionResponse,
 	})
 
 }
@@ -153,11 +159,13 @@ func (t *transactionController) UpdateTransaction(c echo.Context) error {
 
 	}
 
+	transactionResponse := changeToTransactionResponse(transaction)
+
 	return c.JSON(http.StatusOK,
 		models.HttpResponse{
 			Status:  http.StatusOK,
 			Message: "Success Updated",
-			Data:    transaction,
+			Data:    transactionResponse,
 		},
 	)
 }
@@ -229,4 +237,72 @@ func (t *transactionController) SoftDeleteTransaction(c echo.Context) error {
 		Status:  http.StatusOK,
 		Message: "Success Deleted",
 	})
+}
+func changeToTransactionResponse(transaction models.Transaction) models.TransactionResponse {
+	produts := make([]models.TransactionProductResponse, 0)
+	for _, v := range transaction.TransactionDetail {
+		produts = append(produts, models.TransactionProductResponse{
+			ShoesId: v.ShoesId,
+			Size:    v.Size,
+			Qty:     v.Qty,
+			Price:   v.Price,
+		})
+
+	}
+
+	return models.TransactionResponse{
+		ID:         int(transaction.ID),
+		UserId:     int(transaction.UserId),
+		TotalPrice: transaction.TotalPrice,
+		Status:     transaction.Status,
+		Products:   produts,
+		Payment: models.PaymentMethodResponse{
+			Name:        transaction.PaymentMethod.Name,
+			CodePayment: transaction.PaymentMethod.CodePayment,
+			Status:      transaction.PaymentMethod.Status,
+		},
+		Shipping: models.ShippingResponse{
+			Address:      transaction.Shipping.Address,
+			Price:        transaction.Shipping.Price,
+			Name:         transaction.Shipping.Method,
+			DeliveriDate: transaction.Shipping.DeliveriDate,
+		},
+	}
+}
+
+func changeToArrayTransactionResponse(transactions []models.Transaction) []models.TransactionResponse {
+	transactionResponse := make([]models.TransactionResponse, 0)
+
+	for _, transaction := range transactions {
+		produts := make([]models.TransactionProductResponse, 0)
+		for _, v := range transaction.TransactionDetail {
+			produts = append(produts, models.TransactionProductResponse{
+				ShoesId: v.ShoesId,
+				Size:    v.Size,
+				Qty:     v.Qty,
+				Price:   v.Price,
+			})
+
+		}
+		transactionResponse = append(transactionResponse, models.TransactionResponse{
+			ID:         int(transaction.ID),
+			UserId:     int(transaction.UserId),
+			TotalPrice: transaction.TotalPrice,
+			Status:     transaction.Status,
+			Products:   produts,
+			Payment: models.PaymentMethodResponse{
+				Name:        transaction.PaymentMethod.Name,
+				CodePayment: transaction.PaymentMethod.CodePayment,
+				Status:      transaction.PaymentMethod.Status,
+			},
+			Shipping: models.ShippingResponse{
+				Address:      transaction.Shipping.Address,
+				Price:        transaction.Shipping.Price,
+				Name:         transaction.Shipping.Method,
+				DeliveriDate: transaction.Shipping.DeliveriDate,
+			},
+		})
+
+	}
+	return transactionResponse
 }

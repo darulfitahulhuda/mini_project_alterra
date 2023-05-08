@@ -33,3 +33,20 @@ type TransactionDetail struct {
 	Size          int            `json:"size" form:"size"`
 	DeletedAt     gorm.DeletedAt `gorm:"index"`
 }
+
+type TransactionResponse struct {
+	ID         int                          `json:"id"`
+	UserId     int                          `json:"user_id"`
+	TotalPrice float64                      `json:"total_price" form:"total_price"`
+	Status     string                       `json:"status" form:"status"`
+	Payment    PaymentMethodResponse        `json:"payment_method"`
+	Products   []TransactionProductResponse `json:"products"`
+	Shipping   ShippingResponse             `json:"shipping"`
+}
+
+type TransactionProductResponse struct {
+	ShoesId uint    `json:"shoes_id" form:"shoes_id" `
+	Qty     int     `json:"qty" form:"qty"`
+	Price   float64 `json:"price" form:"price"`
+	Size    int     `json:"size" form:"size"`
+}

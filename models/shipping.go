@@ -14,3 +14,10 @@ type Shipping struct {
 	Method        string     `json:"method" form:"method"`
 	DeliveriDate  *time.Time `json:"delivery_date" form:"delivery_date" gorm:"column:delivery_date"`
 }
+
+type ShippingResponse struct {
+	Address      string     `json:"address" form:"address"`
+	Price        float64    `json:"price" form:"price"`
+	Name         string     `json:"name" form:"name"`
+	DeliveriDate *time.Time `json:"delivery_date" form:"delivery_date" `
+}
