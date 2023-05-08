@@ -33,15 +33,3 @@ type TransactionDetail struct {
 	Size          int            `json:"size" form:"size"`
 	DeletedAt     gorm.DeletedAt `gorm:"index"`
 }
-
-type TransactionResponse struct {
-	Message string      `json:"message"`
-	Status  int         `json:"status"`
-	Data    Transaction `json:"data"`
-}
-
-type TransactionListResponse struct {
-	Message string        `json:"message"`
-	Status  int           `json:"status"`
-	Data    []Transaction `json:"data"`
-}

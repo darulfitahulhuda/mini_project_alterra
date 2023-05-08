@@ -10,10 +10,10 @@ import (
 )
 
 type TransactionUsecase interface {
-	CreateTransaction(payload dto.Transaction) (models.Transaction, error)
+	CreateTransaction(payload dto.TransactionRequest) (models.Transaction, error)
 	GetAllTransaction() ([]models.Transaction, error)
 	GetTransactionByUser(userId int) ([]models.Transaction, error)
-	UpdateTransaction(id int, payload dto.Transaction) (models.Transaction, error)
+	UpdateTransaction(id int, payload dto.TransactionRequest) (models.Transaction, error)
 	UpdatePaymentMethod(payload dto.PaymentStatus) error
 	SoftDeleteTransaction(id int) error
 }
@@ -27,7 +27,7 @@ func NewTransactionUsecase(transactionRepo repository.TransactionRepository, sho
 	return &transactionUsecase{transactionRepo: transactionRepo, shoesRepo: shoesRepo}
 }
 
-func (u *transactionUsecase) CreateTransaction(payload dto.Transaction) (models.Transaction, error) {
+func (u *transactionUsecase) CreateTransaction(payload dto.TransactionRequest) (models.Transaction, error) {
 	var totalPrice float64
 	var transactionDetails []models.TransactionDetail
 
@@ -99,7 +99,7 @@ func (u *transactionUsecase) GetTransactionByUser(userId int) ([]models.Transact
 
 }
 
-func (u *transactionUsecase) UpdateTransaction(id int, payload dto.Transaction) (models.Transaction, error) {
+func (u *transactionUsecase) UpdateTransaction(id int, payload dto.TransactionRequest) (models.Transaction, error) {
 	var totalPrice float64
 	var transactionDetails []models.TransactionDetail
 

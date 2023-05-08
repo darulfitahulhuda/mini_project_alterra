@@ -34,13 +34,29 @@ func (a *adminController) GetAllUsers(c echo.Context) error {
 
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, err)
+	}
+
+	userResponse := make([]models.UserResponse, 0)
+
+	for _, v := range users {
+		userResponse = append(userResponse, models.UserResponse{
+			ID:          int(v.ID),
+			Name:        v.Email,
+			Email:       v.Email,
+			DateOfBirth: v.DateOfBirth,
+			Address:     v.Address,
+			UserType:    v.UserType,
+		})
 
 	}
 
-	return c.JSON(http.StatusOK, echo.Map{
-		"message": "Success Get All User",
-		"data":    users,
-	})
+	return c.JSON(http.StatusOK,
+		models.HttpResponse{
+			Status:  http.StatusOK,
+			Message: "Success Get All User",
+			Data:    userResponse,
+		},
+	)
 
 }
 
@@ -63,11 +79,20 @@ func (a *adminController) GetAdminByAuth(c echo.Context) error {
 		})
 	}
 
-	return c.JSON(http.StatusOK, echo.Map{
-		"status":  http.StatusOK,
-		"message": "Success get admin",
-		"data":    admin,
-	})
+	return c.JSON(http.StatusOK,
+		models.HttpResponse{
+			Status:  http.StatusOK,
+			Message: "Success Get Admin",
+			Data: models.UserResponse{
+				ID:          int(admin.ID),
+				Name:        admin.Email,
+				Email:       admin.Email,
+				DateOfBirth: admin.DateOfBirth,
+				Address:     admin.Address,
+				UserType:    admin.UserType,
+			},
+		},
+	)
 }
 
 func (a *adminController) UpdateAdmin(c echo.Context) error {
@@ -96,12 +121,20 @@ func (a *adminController) UpdateAdmin(c echo.Context) error {
 			"message": err.Error(),
 		})
 	}
-
-	return c.JSON(http.StatusOK, echo.Map{
-		"status":  http.StatusOK,
-		"message": "Success update admin",
-		"data":    admin,
-	})
+	return c.JSON(http.StatusOK,
+		models.HttpResponse{
+			Status:  http.StatusOK,
+			Message: "Success update admin",
+			Data: models.UserResponse{
+				ID:          int(admin.ID),
+				Name:        admin.Email,
+				Email:       admin.Email,
+				DateOfBirth: admin.DateOfBirth,
+				Address:     admin.Address,
+				UserType:    admin.UserType,
+			},
+		},
+	)
 
 }
 func (a *adminController) DeleteAdmin(c echo.Context) error {

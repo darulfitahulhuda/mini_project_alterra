@@ -8,9 +8,9 @@ import (
 )
 
 type CartUsecase interface {
-	CreateCart(userId int, payload dto.Cart) (models.Carts, error)
+	CreateCart(userId int, payload dto.CartRequest) (models.Carts, error)
 	GetAllCarts(userId int) ([]models.Carts, error)
-	UpdateCart(id, userId int, payload dto.Cart) (models.Carts, error)
+	UpdateCart(id, userId int, payload dto.CartRequest) (models.Carts, error)
 	DeleteCartItem(id int) error
 }
 
@@ -23,7 +23,7 @@ func NewCartUsecase(cartRepo repository.CartRepository, shoesRepo repository.Sho
 	return &cartUsecase{cartRepo: cartRepo, shoesRepo: shoesRepo}
 }
 
-func (u *cartUsecase) CreateCart(userId int, payload dto.Cart) (models.Carts, error) {
+func (u *cartUsecase) CreateCart(userId int, payload dto.CartRequest) (models.Carts, error) {
 	data := models.Carts{
 		UserId:  uint(userId),
 		ShoesId: uint(payload.ShoesId),
@@ -78,7 +78,7 @@ func (u *cartUsecase) GetAllCarts(userId int) ([]models.Carts, error) {
 	return carts, nil
 
 }
-func (u *cartUsecase) UpdateCart(id, userId int, payload dto.Cart) (models.Carts, error) {
+func (u *cartUsecase) UpdateCart(id, userId int, payload dto.CartRequest) (models.Carts, error) {
 	shoes, err := u.shoesRepo.GetDetailShoes(int(payload.ShoesId))
 	status := "Available"
 

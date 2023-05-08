@@ -22,10 +22,10 @@ func NewCartContoller(cartUsecase usecase.CartUsecase, authUsecase usecase.AuthU
 }
 
 func (cc *cartController) CreateCart(c echo.Context) error {
-	var payload dto.Cart
+	var payload dto.CartRequest
 
 	if err := c.Bind(&payload); err != nil {
-		return c.JSON(http.StatusBadRequest, models.ErrorResponse{
+		return c.JSON(http.StatusBadRequest, models.HttpResponse{
 			Status:  http.StatusBadRequest,
 			Message: err.Error(),
 		})
@@ -34,14 +34,14 @@ func (cc *cartController) CreateCart(c echo.Context) error {
 	userId := cc.authUsecase.ExtractTokenUserId(c, models.User_Type)
 	if userId == 0 {
 		return c.JSON(http.StatusUnauthorized,
-			models.ErrorResponse{
+			models.HttpResponse{
 				Status:  http.StatusUnauthorized,
 				Message: "Token Unauthorized",
 			})
 	}
 	cart, err := cc.cartUsecase.CreateCart(userId, payload)
 	if err != nil {
-		return c.JSON(http.StatusBadRequest, models.ErrorResponse{
+		return c.JSON(http.StatusBadRequest, models.HttpResponse{
 			Status:  http.StatusBadRequest,
 			Message: err.Error(),
 		})
@@ -71,7 +71,7 @@ func (cc *cartController) GetAllCarts(c echo.Context) error {
 	userId := cc.authUsecase.ExtractTokenUserId(c, models.User_Type)
 	if userId == 0 {
 		return c.JSON(http.StatusUnauthorized,
-			models.ErrorResponse{
+			models.HttpResponse{
 				Status:  http.StatusUnauthorized,
 				Message: "Token Unauthorized",
 			})
@@ -79,7 +79,7 @@ func (cc *cartController) GetAllCarts(c echo.Context) error {
 
 	carts, err := cc.cartUsecase.GetAllCarts(userId)
 	if err != nil {
-		return c.JSON(http.StatusBadRequest, models.ErrorResponse{
+		return c.JSON(http.StatusBadRequest, models.HttpResponse{
 			Status:  http.StatusBadRequest,
 			Message: err.Error(),
 		})
@@ -109,19 +109,19 @@ func (cc *cartController) GetAllCarts(c echo.Context) error {
 }
 
 func (cc *cartController) UpdateCart(c echo.Context) error {
-	var payload dto.Cart
+	var payload dto.CartRequest
 
 	id, err := strconv.Atoi(c.Param("id"))
 
 	if err != nil {
-		return c.JSON(http.StatusBadRequest, models.ErrorResponse{
+		return c.JSON(http.StatusBadRequest, models.HttpResponse{
 			Status:  http.StatusBadRequest,
 			Message: err.Error(),
 		})
 	}
 
 	if err := c.Bind(&payload); err != nil {
-		return c.JSON(http.StatusBadRequest, models.ErrorResponse{
+		return c.JSON(http.StatusBadRequest, models.HttpResponse{
 			Status:  http.StatusBadRequest,
 			Message: err.Error(),
 		})
@@ -130,7 +130,7 @@ func (cc *cartController) UpdateCart(c echo.Context) error {
 	userId := cc.authUsecase.ExtractTokenUserId(c, models.User_Type)
 	if userId == 0 {
 		return c.JSON(http.StatusUnauthorized,
-			models.ErrorResponse{
+			models.HttpResponse{
 				Status:  http.StatusUnauthorized,
 				Message: "Token Unauthorized",
 			})
@@ -139,7 +139,7 @@ func (cc *cartController) UpdateCart(c echo.Context) error {
 	cart, err := cc.cartUsecase.UpdateCart(id, userId, payload)
 
 	if err != nil {
-		return c.JSON(http.StatusBadRequest, models.ErrorResponse{
+		return c.JSON(http.StatusBadRequest, models.HttpResponse{
 			Status:  http.StatusBadRequest,
 			Message: err.Error(),
 		})
@@ -169,7 +169,7 @@ func (cc *cartController) DeleteCartItem(c echo.Context) error {
 	id, err := strconv.Atoi(c.Param("id"))
 
 	if err != nil {
-		return c.JSON(http.StatusBadRequest, models.ErrorResponse{
+		return c.JSON(http.StatusBadRequest, models.HttpResponse{
 			Status:  http.StatusBadRequest,
 			Message: err.Error(),
 		})
@@ -178,20 +178,20 @@ func (cc *cartController) DeleteCartItem(c echo.Context) error {
 	userId := cc.authUsecase.ExtractTokenUserId(c, models.User_Type)
 	if userId == 0 {
 		return c.JSON(http.StatusUnauthorized,
-			models.ErrorResponse{
+			models.HttpResponse{
 				Status:  http.StatusUnauthorized,
 				Message: "Token Unauthorized",
 			})
 	}
 
 	if err := cc.cartUsecase.DeleteCartItem(id); err != nil {
-		return c.JSON(http.StatusBadRequest, models.ErrorResponse{
+		return c.JSON(http.StatusBadRequest, models.HttpResponse{
 			Status:  http.StatusBadRequest,
 			Message: err.Error(),
 		})
 	}
 
-	return c.JSON(http.StatusCreated, models.SuccessResponse{
+	return c.JSON(http.StatusCreated, models.HttpResponse{
 		Status:  http.StatusCreated,
 		Message: "Success deleted",
 	})

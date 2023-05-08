@@ -2,7 +2,7 @@ package dto
 
 import "time"
 
-type Transaction struct {
+type TransactionRequest struct {
 	UserId        int                 `json:"user_id" form:"user_id"`
 	TotalPrice    float64             `json:"total_price" form:"total_price"`
 	Status        string              `json:"status" form:"status"`

@@ -39,6 +39,10 @@ func main() {
 	e.POST("/register", userController.Create)
 	e.POST("/login", userController.LoginUser)
 
+	// shoes routes without token
+	e.GET("shoes", shoesController.GetAllShoes)
+	e.GET("shoes/:id", shoesController.GetDetailShoes)
+
 	r := e.Group("/")
 	{
 		// jwt config
@@ -79,10 +83,6 @@ func main() {
 		r.PUT("user/carts/:id", cartController.UpdateCart)
 		r.DELETE("user/carts/:id", cartController.DeleteCartItem)
 	}
-
-	// shoes routes
-	e.GET("shoes", shoesController.GetAllShoes)
-	e.GET("shoes/:id", shoesController.GetDetailShoes)
 
 	e.Logger.Fatal(e.Start(":8080"))
 }

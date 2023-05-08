@@ -30,11 +30,6 @@ type ShoesSize struct {
 	Size    int  `json:"size" form:"size"`
 	Qty     int  `json:"qty" form:"qty"`
 }
-type ShoesListResponse struct {
-	Message string          `json:"message"`
-	Status  int             `json:"status"`
-	Data    []ShoesListData `json:"data"`
-}
 type ShoesListData struct {
 	ID     int      `json:"id"`
 	Name   string   `json:"name"`
@@ -42,25 +37,14 @@ type ShoesListData struct {
 	Price  float64  `json:"price"`
 	Gender string   `json:"gender"`
 }
-type ShoesDetailResponse struct {
-	Message string          `json:"message"`
-	Status  int             `json:"status"`
-	Data    ShoesDetailData `json:"data"`
-}
 
 type ShoesDetailData struct {
-	ID          int             `json:"id"`
-	Name        string          `json:"name"`
-	Images      []string        `json:"images"`
-	Price       float64         `json:"price"`
-	Gender      string          `json:"gender"`
-	Description string          `json:"description"`
-	Brand       string          `json:"brand"`
-	Sizes       []dto.ShoesSize `json:"sizes"`
-}
-
-type ShoesSizeResponse struct {
-	Message string    `json:"message"`
-	Status  int       `json:"status"`
-	Data    ShoesSize `json:"data"`
+	ID          int                    `json:"id"`
+	Name        string                 `json:"name"`
+	Images      []string               `json:"images"`
+	Price       float64                `json:"price"`
+	Gender      string                 `json:"gender"`
+	Description string                 `json:"description"`
+	Brand       string                 `json:"brand"`
+	Sizes       []dto.ShoesSizeRequest `json:"sizes"`
 }

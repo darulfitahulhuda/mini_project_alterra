@@ -14,11 +14,6 @@ type Carts struct {
 	Shoes   Shoes  `json:"shoes" form:"shoes" gorm:"foreignKey:ID;references:shoes_id"`
 }
 
-type CartListResponse struct {
-	Message string  `json:"message"`
-	Status  int     `json:"status"`
-	Data    []Carts `json:"data"`
-}
 type CartResponse struct {
 	ID         int      `json:"id"`
 	ShoesId    int      `json:"shoes_id"`
