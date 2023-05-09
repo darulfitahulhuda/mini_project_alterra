@@ -1,7 +1,6 @@
 package controllers
 
 import (
-	"main/dto"
 	"main/models"
 	"main/usecase"
 	"net/http"
@@ -96,7 +95,7 @@ func (a *adminController) GetAdminByAuth(c echo.Context) error {
 }
 
 func (a *adminController) UpdateAdmin(c echo.Context) error {
-	var data dto.UpdateUser
+	var data models.User
 
 	adminId := a.authCase.ExtractTokenUserId(c, models.Admin_Type)
 

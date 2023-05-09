@@ -21,7 +21,7 @@ func NewUserController(userUsecase usecase.UserUsecase, authUsecase usecase.Auth
 }
 
 func (u *userController) Create(c echo.Context) error {
-	var data dto.CreateUser
+	var data models.User
 
 	if err := c.Bind(&data); err != nil {
 		return c.JSON(http.StatusBadRequest, models.HttpResponse{
@@ -68,7 +68,7 @@ func (u *userController) Create(c echo.Context) error {
 }
 
 func (u *userController) LoginUser(c echo.Context) error {
-	user := dto.LoginUser{}
+	user := models.User{}
 
 	if err := c.Bind(&user); err != nil {
 		return c.JSON(http.StatusBadRequest, models.HttpResponse{
@@ -148,7 +148,7 @@ func (u *userController) GetUserByAuth(c echo.Context) error {
 }
 
 func (u *userController) UpdateUser(c echo.Context) error {
-	var data dto.UpdateUser
+	var data models.User
 
 	userId := u.authCase.ExtractTokenUserId(c, models.User_Type)
 

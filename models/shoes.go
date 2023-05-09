@@ -30,6 +30,7 @@ type ShoesSize struct {
 	Size    int  `json:"size" form:"size"`
 	Qty     int  `json:"qty" form:"qty"`
 }
+
 type ShoesListData struct {
 	ID     int      `json:"id"`
 	Name   string   `json:"name"`

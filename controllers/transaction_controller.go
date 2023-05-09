@@ -171,7 +171,7 @@ func (t *transactionController) UpdateTransaction(c echo.Context) error {
 }
 
 func (t *transactionController) UpdatePaymentMethod(c echo.Context) error {
-	var data dto.PaymentStatus
+	var data models.PaymentMethod
 
 	userId := t.authUsecase.ExtractTokenUserId(c, "all")
 
@@ -242,6 +242,7 @@ func changeToTransactionResponse(transaction models.Transaction) models.Transact
 	produts := make([]models.TransactionProductResponse, 0)
 	for _, v := range transaction.TransactionDetail {
 		produts = append(produts, models.TransactionProductResponse{
+			ID:      int(v.ID),
 			ShoesId: v.ShoesId,
 			Size:    v.Size,
 			Qty:     v.Qty,
@@ -277,6 +278,7 @@ func changeToArrayTransactionResponse(transactions []models.Transaction) []model
 		produts := make([]models.TransactionProductResponse, 0)
 		for _, v := range transaction.TransactionDetail {
 			produts = append(produts, models.TransactionProductResponse{
+				ID:      int(v.ID),
 				ShoesId: v.ShoesId,
 				Size:    v.Size,
 				Qty:     v.Qty,

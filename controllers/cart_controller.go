@@ -1,7 +1,6 @@
 package controllers
 
 import (
-	"main/dto"
 	"main/models"
 	"main/usecase"
 	"net/http"
@@ -22,7 +21,7 @@ func NewCartContoller(cartUsecase usecase.CartUsecase, authUsecase usecase.AuthU
 }
 
 func (cc *cartController) CreateCart(c echo.Context) error {
-	var payload dto.CartRequest
+	var payload models.Carts
 
 	if err := c.Bind(&payload); err != nil {
 		return c.JSON(http.StatusBadRequest, models.HttpResponse{
@@ -109,7 +108,7 @@ func (cc *cartController) GetAllCarts(c echo.Context) error {
 }
 
 func (cc *cartController) UpdateCart(c echo.Context) error {
-	var payload dto.CartRequest
+	var payload models.Carts
 
 	id, err := strconv.Atoi(c.Param("id"))
 

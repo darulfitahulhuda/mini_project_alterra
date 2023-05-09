@@ -15,7 +15,7 @@ type TransactionUsecase interface {
 	GetAllTransaction() ([]models.Transaction, error)
 	GetTransactionByUser(userId int) ([]models.Transaction, error)
 	UpdateTransaction(id int, payload dto.TransactionRequest) (models.Transaction, error)
-	UpdatePaymentMethod(payload dto.PaymentStatus) error
+	UpdatePaymentMethod(payload models.PaymentMethod) error
 	SoftDeleteTransaction(id int) error
 }
 
@@ -33,11 +33,24 @@ func (u *transactionUsecase) CreateTransaction(payload dto.TransactionRequest) (
 	var transactionDetails []models.TransactionDetail
 
 	for _, v := range payload.Products {
-		prodcutPrice := v.Price * float64(v.Qty)
+		getShoes, err := u.shoesRepo.GetDetailShoes(v.ShoesId)
+
+		if err != nil {
+			return models.Transaction{}, errors.New("Get ID " + strconv.Itoa(v.ID) + "Error")
+		}
+		for _, sizes := range getShoes.Sizes {
+			if v.Size == sizes.Size && v.Qty > sizes.Qty {
+				return models.Transaction{}, errors.New("Quantity product " + getShoes.Name + " Only Available " + strconv.Itoa(sizes.Qty))
+			}
+
+		}
+
+		prodcutPrice := getShoes.Price * float64(v.Qty)
 		totalPrice += prodcutPrice
+
 		transactionDetails = append(transactionDetails, models.TransactionDetail{
-			ShoesId: uint(v.ShoesId),
-			Price:   v.Price,
+			ShoesId: getShoes.ID,
+			Price:   getShoes.Price,
 			Qty:     v.Qty,
 			Size:    v.Size,
 		})
@@ -167,11 +180,12 @@ func (u *transactionUsecase) UpdateTransaction(id int, payload dto.TransactionRe
 	return getTransactionId, nil
 }
 
-func (u *transactionUsecase) UpdatePaymentMethod(payload dto.PaymentStatus) error {
+func (u *transactionUsecase) UpdatePaymentMethod(payload models.PaymentMethod) error {
 	data := models.PaymentMethod{
 		CodePayment: payload.CodePayment,
 		Status:      models.PAYMENT_STATUS_SUCCESS,
 	}
+
 	paymentMethod, err := u.transactionRepo.UpdatePaymentMethod(data)
 	if err != nil {
 		return err

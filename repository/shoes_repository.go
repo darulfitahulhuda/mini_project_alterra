@@ -114,15 +114,20 @@ func (r *shoesRepository) ReduceShoesQty(data models.ShoesSize) error {
 
 func (r *shoesRepository) DeleteShoes(id int) error {
 	var shoes models.Shoes
+
 	if err := r.db.Delete(&shoes, id).Error; err != nil {
 		return err
 	}
+	if err := r.db.Where("shoes_id = ?", id).Delete(&models.ShoesDetail{}).Error; err != nil {
+		return err
+	}
+
 	return nil
 }
 
 func (r *shoesRepository) DeleteShoesSize(data models.ShoesSize, all bool) error {
 	if all {
-		if err := r.db.Where("shoes_id = ?", data.ShoesId).Delete(&data).Error; err != nil {
+		if err := r.db.Where("shoes_id = ?", data.ShoesId).Delete(&models.ShoesSize{}).Error; err != nil {
 			return err
 		}
 	} else {

@@ -45,6 +45,7 @@ type TransactionResponse struct {
 }
 
 type TransactionProductResponse struct {
+	ID      int     `json:"id"`
 	ShoesId uint    `json:"shoes_id" form:"shoes_id" `
 	Qty     int     `json:"qty" form:"qty"`
 	Price   float64 `json:"price" form:"price"`

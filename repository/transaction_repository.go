@@ -51,7 +51,7 @@ func (r *transactionRepository) GetAllTransaction() ([]models.Transaction, error
 func (r *transactionRepository) GetTransactionByUser(userId int) ([]models.Transaction, error) {
 	var transactions []models.Transaction
 
-	if err := r.db.Where("user_id = ?", userId).Preload("PaymentMethod").Preload("TransactionDetail").Preload("Shipping").Find(&transactions).Error; err != nil {
+	if err := r.db.Where("user_id = ?", userId).Order("ID desc").Preload("PaymentMethod").Preload("TransactionDetail").Preload("Shipping").Find(&transactions).Error; err != nil {
 		return []models.Transaction{}, err
 	}
 

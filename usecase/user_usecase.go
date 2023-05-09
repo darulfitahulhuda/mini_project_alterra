@@ -2,7 +2,6 @@ package usecase
 
 import (
 	"errors"
-	"main/dto"
 	"main/models"
 	"main/repository"
 
@@ -10,12 +9,12 @@ import (
 )
 
 type UserUsecase interface {
-	CreateUser(payload dto.CreateUser) (models.User, error)
+	CreateUser(payload models.User) (models.User, error)
 	GetAllUsers() ([]models.User, error)
-	LoginUser(payload dto.LoginUser) (models.User, error)
+	LoginUser(payload models.User) (models.User, error)
 	GetUserById(id int) (models.User, error)
 	DeleteUser(id int) (models.User, error)
-	UpdateUser(id int, payload dto.UpdateUser) (models.User, error)
+	UpdateUser(id int, payload models.User) (models.User, error)
 }
 
 type userUsecase struct {
@@ -26,7 +25,7 @@ func NewUserUsecase(userRepo repository.UserRepository) *userUsecase {
 	return &userUsecase{userRepository: userRepo}
 }
 
-func (u *userUsecase) CreateUser(payload dto.CreateUser) (models.User, error) {
+func (u *userUsecase) CreateUser(payload models.User) (models.User, error) {
 	password, err := bcrypt.GenerateFromPassword([]byte(payload.Password), 14)
 	if err != nil {
 		return models.User{}, err
@@ -48,13 +47,8 @@ func (u *userUsecase) CreateUser(payload dto.CreateUser) (models.User, error) {
 	return user, nil
 }
 
-func (u *userUsecase) LoginUser(payload dto.LoginUser) (models.User, error) {
-	data := models.User{
-		Email:    payload.Email,
-		Password: payload.Password,
-		UserType: payload.UserType,
-	}
-	user, err := u.userRepository.LoginUser(data)
+func (u *userUsecase) LoginUser(payload models.User) (models.User, error) {
+	user, err := u.userRepository.LoginUser(payload)
 
 	if err != nil {
 		return user, err
@@ -88,15 +82,8 @@ func (u *userUsecase) GetUserById(id int) (models.User, error) {
 	return user, nil
 }
 
-func (u *userUsecase) UpdateUser(id int, payload dto.UpdateUser) (models.User, error) {
-	user := models.User{
-		Name:        payload.Name,
-		Email:       payload.Email,
-		DateOfBirth: payload.DateOfBirth,
-		Address:     payload.Address,
-	}
-
-	err := u.userRepository.UpdateUser(id, user)
+func (u *userUsecase) UpdateUser(id int, payload models.User) (models.User, error) {
+	err := u.userRepository.UpdateUser(id, payload)
 
 	if err != nil {
 		return models.User{}, err

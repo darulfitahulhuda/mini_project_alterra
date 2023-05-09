@@ -1,16 +1,15 @@
 package usecase
 
 import (
-	"main/dto"
 	"main/models"
 	"main/repository"
 	"strconv"
 )
 
 type CartUsecase interface {
-	CreateCart(userId int, payload dto.CartRequest) (models.Carts, error)
+	CreateCart(userId int, payload models.Carts) (models.Carts, error)
 	GetAllCarts(userId int) ([]models.Carts, error)
-	UpdateCart(id, userId int, payload dto.CartRequest) (models.Carts, error)
+	UpdateCart(id, userId int, payload models.Carts) (models.Carts, error)
 	DeleteCartItem(id int) error
 }
 
@@ -23,15 +22,10 @@ func NewCartUsecase(cartRepo repository.CartRepository, shoesRepo repository.Sho
 	return &cartUsecase{cartRepo: cartRepo, shoesRepo: shoesRepo}
 }
 
-func (u *cartUsecase) CreateCart(userId int, payload dto.CartRequest) (models.Carts, error) {
-	data := models.Carts{
-		UserId:  uint(userId),
-		ShoesId: uint(payload.ShoesId),
-		Size:    payload.Size,
-		Status:  payload.Status,
-		Qty:     payload.Qty,
-	}
-	cart, err := u.cartRepo.CreateCart(data)
+func (u *cartUsecase) CreateCart(userId int, payload models.Carts) (models.Carts, error) {
+	payload.UserId = uint(userId)
+
+	cart, err := u.cartRepo.CreateCart(payload)
 	if err != nil {
 		return models.Carts{}, err
 	}
@@ -78,8 +72,10 @@ func (u *cartUsecase) GetAllCarts(userId int) ([]models.Carts, error) {
 	return carts, nil
 
 }
-func (u *cartUsecase) UpdateCart(id, userId int, payload dto.CartRequest) (models.Carts, error) {
-	shoes, err := u.shoesRepo.GetDetailShoes(int(payload.ShoesId))
+func (u *cartUsecase) UpdateCart(id, userId int, payload models.Carts) (models.Carts, error) {
+	cartByID, _ := u.cartRepo.GetCartById(id)
+
+	shoes, err := u.shoesRepo.GetDetailShoes(int(cartByID.ShoesId))
 	status := "Available"
 
 	if err != nil {

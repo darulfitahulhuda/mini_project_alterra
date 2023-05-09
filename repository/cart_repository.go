@@ -9,6 +9,7 @@ import (
 type CartRepository interface {
 	CreateCart(data models.Carts) (models.Carts, error)
 	GetAllCarts(userId int) ([]models.Carts, error)
+	GetCartById(id int) (models.Carts, error)
 	UpdateCart(id int, data models.Carts) (models.Carts, error)
 	DeleteCartItem(id int) error
 }
@@ -24,6 +25,16 @@ func NewCartRepository(db *gorm.DB) *cartRepository {
 func (r *cartRepository) CreateCart(data models.Carts) (models.Carts, error) {
 	err := r.db.Create(&data).Error
 	return data, err
+}
+
+func (r *cartRepository) GetCartById(id int) (models.Carts, error) {
+	var cart models.Carts
+
+	if err := r.db.First(&cart, id).Error; err != nil {
+		return cart, err
+	}
+	return cart, nil
+
 }
 
 func (r *cartRepository) GetAllCarts(userId int) ([]models.Carts, error) {

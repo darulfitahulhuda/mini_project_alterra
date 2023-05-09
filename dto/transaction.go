@@ -27,9 +27,3 @@ type TransactionShipping struct {
 	Method       string     `json:"method" form:"method"`
 	DeliveriDate *time.Time `json:"delivery_date" form:"delivery_date"`
 }
-
-type PaymentStatus struct {
-	Name          string `json:"name" form:"name"`
-	StatusPayment string `json:"status_payment" form:"status_payment"`
-	CodePayment   string `json:"code_payment" form:"code_payment" gorm:"column:code_payment"`
-}
