@@ -58,7 +58,7 @@ func (u *userController) Create(c echo.Context) error {
 			Message: "Success Create User",
 			Data: models.AuthResponse{
 				ID:       int(user.ID),
-				Name:     user.Email,
+				Name:     user.Name,
 				Email:    user.Email,
 				UserType: user.UserType,
 				Token:    token,
@@ -105,7 +105,7 @@ func (u *userController) LoginUser(c echo.Context) error {
 			Data: models.AuthResponse{
 				ID:       int(users.ID),
 				Token:    token,
-				Name:     users.Email,
+				Name:     users.Name,
 				Email:    users.Email,
 				UserType: users.UserType,
 			},
